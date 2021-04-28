@@ -1,0 +1,59 @@
+﻿@page "/"
+@using NXO.Shared.Models.Authentication
+@inject HttpClient Http
+
+<div class="container">
+    <div class="row">
+        <div class="p-3 m-auto">
+            <h3>Login</h3>
+            @if(!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="alert alert-error">
+                    @ErrorMessage
+                </div>
+            }
+            <div class="form-group">
+                <label class="control-label">Game Code</label>
+                <input name="GameCode" class="form-control" @bind-value="GameCode" />
+                <span asp-validation-for="For" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Nickname</label>
+                <input name="GameCode" class="form-control" @bind-value="Nickname" />
+                <span asp-validation-for="For" class="text-danger"></span>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <a class="btn btn-success" @onclick="ClickCreateGameButton" href="#"><i class="fas fa-plus mr-1"></i>New Lobby</a>
+                </div>
+                <div class="col-6">
+                    <a class="btn btn-primary" @onclick="ClickJoinButton" href="#"><i class="fas fa-plus mr-1"></i>Join</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private string GameCode { get; set; }
+    private string Nickname { get; set; }
+
+    private string ErrorMessage { get; set; }
+
+    private void ClickCreateGameButton()
+    {
+
+    }
+
+    private async Task ClickJoinButton()
+    {
+        var request = new JoinRequest()
+        {
+            GameCode = GameCode,
+            Nickname = Nickname
+        };
+        var result = await Http.PostFromJsonAsync<JoinRequest, JoinResult>("Authentication/Join", request);
+        ErrorMessage = result.Success ? "Yes" : "No";
+    }
+}
