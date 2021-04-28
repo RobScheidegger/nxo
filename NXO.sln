@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NXO.Server", "Server\NXO.Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NXO.Shared", "Shared\NXO.Shared.csproj", "{C91CEA7B-F8EE-4776-8A16-421E8F2E83A8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NXO.UnitTests", "UnitTests\NXO.UnitTests.csproj", "{3764D8AD-BCA6-410B-9DF0-E6BEFFC9B171}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{C91CEA7B-F8EE-4776-8A16-421E8F2E83A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C91CEA7B-F8EE-4776-8A16-421E8F2E83A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C91CEA7B-F8EE-4776-8A16-421E8F2E83A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3764D8AD-BCA6-410B-9DF0-E6BEFFC9B171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3764D8AD-BCA6-410B-9DF0-E6BEFFC9B171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3764D8AD-BCA6-410B-9DF0-E6BEFFC9B171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3764D8AD-BCA6-410B-9DF0-E6BEFFC9B171}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

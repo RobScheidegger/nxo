@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace NXO.Shared.Models.Authentication
+namespace NXO.Shared.Models
 {
     public class JoinRequest
     {

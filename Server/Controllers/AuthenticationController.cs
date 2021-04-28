@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NXO.Server.Dependencies;
 using NXO.Shared;
-using NXO.Shared.Models.Authentication;
+using NXO.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,19 +15,18 @@ namespace NXO.Server.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly ILogger<AuthenticationController> logger;
+        private readonly IAuthenticationManager authentication;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationManager authentication)
         {
             this.logger = logger;
+            this.authentication = authentication;
         }
 
         [HttpPost("Join")]
-        public JoinResult Join(JoinRequest request)
+        public async Task<JoinResult> Join(JoinRequest request)
         {
-            return new JoinResult()
-            {
-                Success = true
-            };
+            return await authentication.AttemptJoinAsync(request);
         }
     }
 }
