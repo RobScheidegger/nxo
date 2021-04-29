@@ -8,8 +8,13 @@ namespace NXO.Server.Dependencies
 {
     public interface ILobbyCoordinator
     {
-        Task<bool> CanJoinAsync(string LobbyCode);
-        Task<JoinResult> JoinAsync(string LobbyCode);
+        /// <summary>
+        /// Assumes that all of the conditions for joining a lobby are met and adds the player to the lobby.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>The result of the </returns>
+        Task<JoinResult> JoinAsync(JoinRequest request);
+        Task<JoinResult> AttemptJoinAsync(JoinRequest request);
         Task<CreateLobbyResult> CreateLobbyAsync(CreateLobbyRequest request);
     }
 }

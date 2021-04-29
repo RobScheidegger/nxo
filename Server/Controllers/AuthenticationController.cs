@@ -15,18 +15,18 @@ namespace NXO.Server.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly ILogger<AuthenticationController> logger;
-        private readonly IAuthenticationManager authentication;
+        private readonly ILobbyCoordinator lobbyCoordinator;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationManager authentication)
+        public AuthenticationController(ILogger<AuthenticationController> logger, ILobbyCoordinator lobbyCoordinator)
         {
             this.logger = logger;
-            this.authentication = authentication;
+            this.lobbyCoordinator = lobbyCoordinator;
         }
 
         [HttpPost("Join")]
         public async Task<JoinResult> Join(JoinRequest request)
         {
-            return await authentication.AttemptJoinAsync(request);
+            return await lobbyCoordinator.AttemptJoinAsync(request);
         }
     }
 }

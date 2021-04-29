@@ -4,8 +4,8 @@ using System.Text;
 
 namespace NXO.Shared.Models
 {
-    public class CreateLobbyRequest
+    public class LobbyStatusRequest
     {
-        public string GameType { get; set; }
+        public string LobbyCode { get; set; }
     }
 }

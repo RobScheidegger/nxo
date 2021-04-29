@@ -6,7 +6,7 @@
     <div class="row">
         <div class="p-3 m-auto">
             <h3>Login</h3>
-            @if(!string.IsNullOrEmpty(ErrorMessage))
+            @if (!string.IsNullOrEmpty(ErrorMessage))
             {
                 <div class="alert alert-danger">
                     @ErrorMessage
@@ -20,6 +20,13 @@
             <div class="form-group">
                 <label class="control-label">Nickname</label>
                 <input name="GameCode" class="form-control" @bind-value="Nickname" />
+                <span asp-validation-for="For" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Create Lobby</label>
+                <select name="GameCode" class="form-control" @bind="LobbyType">
+                    <option value="tictactoe">Tic-Tac-Toe</option>
+                </select>
                 <span asp-validation-for="For" class="text-danger"></span>
             </div>
             <div class="row">
@@ -38,12 +45,21 @@
 @code {
     private string GameCode { get; set; }
     private string Nickname { get; set; }
+    private string LobbyType { get; set; }
 
     private string ErrorMessage { get; set; }
 
-    private void ClickCreateGameButton()
+    private async Task ClickCreateGameButton()
     {
+        var request = new CreateLobbyRequest()
+        {
+            GameType = LobbyType
+        };
+        var result = await Http.PostFromJsonAsync<CreateLobbyRequest, CreateLobbyResult>("Authentication/Create", request);
+        if(result.Success)
+        {
 
+        }
     }
 
     private async Task ClickJoinButton()

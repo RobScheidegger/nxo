@@ -5,18 +5,17 @@ using NXO.Server.Dependencies;
 using NXO.Shared.Models;
 using System.Threading.Tasks;
 
-namespace NXO.UnitTests
+namespace NXO.UnitTests.Management
 { 
-    public class IAuthenticationManagerTests
+    public class LobbyCoordinatorTests
     {
-        internal Mock<ILobbyCoordinator> lobbyCoordinator = new Mock<ILobbyCoordinator>();
-        internal AuthenticationManager manager { get; set; }
-        public IAuthenticationManagerTests()
+        internal LobbyCoordinator manager { get; set; }
+        public LobbyCoordinatorTests()
         {
-            manager = new AuthenticationManager(lobbyCoordinator.Object);
+            
         }
         [Fact]
-        public async Task LobbyCodeNull()
+        public async Task AttemptJoin_LobbyCodeNull()
         {
             //Arrange
             var input = new JoinRequest()
@@ -32,7 +31,7 @@ namespace NXO.UnitTests
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
-        public async Task LobbyCodeEmpty()
+        public async Task AttemptJoin_LobbyCodeEmpty()
         {
             //Arrange
             var input = new JoinRequest()
@@ -48,7 +47,7 @@ namespace NXO.UnitTests
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
-        public async Task LobbyDoesNotExist()
+        public async Task AttemptJoin_LobbyDoesNotExist()
         {
             //Arrange
             var code = "TEST";
@@ -57,7 +56,6 @@ namespace NXO.UnitTests
                 GameCode = code,
                 Nickname = "Anything"
             };
-            lobbyCoordinator.Setup(i => i.CanJoinAsync(code)).ReturnsAsync(false);
             //Act
             var result = await manager.AttemptJoinAsync(input);
             //Assert
@@ -66,16 +64,15 @@ namespace NXO.UnitTests
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
-        public async Task LobbyExists_NicknameEmpty()
+        public async Task AttemptJoin_LobbyExists_NicknameEmpty()
         {
-             //Arrange
+            //Arrange
             var code = "MORETEST";
             var input = new JoinRequest()
             {
                 GameCode = code,
                 Nickname = "Anything"
             };
-            lobbyCoordinator.Setup(i => i.CanJoinAsync(code)).ReturnsAsync(true);
             //Act
             var result = await manager.AttemptJoinAsync(input);
             //Assert
@@ -84,9 +81,32 @@ namespace NXO.UnitTests
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
-        public void LobbyExists_NicknameNotEmpty()
+        public async Task AttemptJoin_LobbyExists_NicknameNotEmpty()
         {
+            //Arrange
+            var code = "MORETEST";
+            var input = new JoinRequest()
+            {
+                GameCode = code,
+                Nickname = "Anything"
+            };
+            //Act
+            var result = await manager.AttemptJoinAsync(input);
+            //Assert
+            Assert.True(result.Success);
+            Assert.NotNull(result.PlayerId);
+            Assert.True(string.IsNullOrEmpty(result.RejectMessage));
+        }
+        [Fact]
+        public async Task CreateLobbyAsync_Success()
+        {
+            //Arrange
+            
+            //Act
+
+            //Assert
 
         }
+
     }
 }
