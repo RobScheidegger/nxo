@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NXO.Server.Dependencies;
+using NXO.Shared;
+using NXO.Shared.Modules;
 using System.Linq;
 
 namespace NXO.Server
@@ -25,6 +28,14 @@ namespace NXO.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            //Shared Services
+            services.AddSingleton<IGameRepository, InMemoryGameRepository>();
+            services.AddSingleton<ILobbyCoordinator, LobbyCoordinator>();
+
+            //TODO: Replace with reflection
+            services.AddSingleton<INXOModule, TicTacToeModule>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

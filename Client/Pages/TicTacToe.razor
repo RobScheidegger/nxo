@@ -1,0 +1,14 @@
+﻿@page "/tictactoe/{LobbyCode}/{PlayerId}"
+@inject HttpClient Http
+@using System.Timers;
+
+<h3>Tic Tac Toe</h3>
+
+@code {
+    [Parameter]
+    public string LobbyCode { get; set; }
+    [Parameter]
+    public string PlayerId { get; set; }
+
+
+}

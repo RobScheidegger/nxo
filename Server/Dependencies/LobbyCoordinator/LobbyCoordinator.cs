@@ -9,6 +9,7 @@ namespace NXO.Server.Dependencies
     public class LobbyCoordinator : ILobbyCoordinator
     {
         private readonly IGameRepository gameRepository;
+        private readonly Dictionary<string, IModuleManager> moduleManagers;
         public LobbyCoordinator(IGameRepository gameRepository)
         {
             this.gameRepository = gameRepository;

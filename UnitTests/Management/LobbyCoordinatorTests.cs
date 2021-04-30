@@ -27,7 +27,7 @@ namespace NXO.UnitTests.Management
             var result = await manager.AttemptJoinAsync(input);
             //Assert
             Assert.False(result.Success);
-            Assert.Null(result.PlayerId);
+            Assert.Null(result.Player);
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
@@ -43,7 +43,7 @@ namespace NXO.UnitTests.Management
             var result = await manager.AttemptJoinAsync(input);
             //Assert
             Assert.False(result.Success);
-            Assert.Null(result.PlayerId);
+            Assert.Null(result.Player);
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
@@ -60,7 +60,7 @@ namespace NXO.UnitTests.Management
             var result = await manager.AttemptJoinAsync(input);
             //Assert
             Assert.False(result.Success);
-            Assert.Null(result.PlayerId);
+            Assert.Null(result.Player);
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
@@ -77,7 +77,7 @@ namespace NXO.UnitTests.Management
             var result = await manager.AttemptJoinAsync(input);
             //Assert
             Assert.False(result.Success);
-            Assert.Null(result.PlayerId);
+            Assert.Null(result.Player);
             Assert.True(!string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
@@ -94,7 +94,7 @@ namespace NXO.UnitTests.Management
             var result = await manager.AttemptJoinAsync(input);
             //Assert
             Assert.True(result.Success);
-            Assert.NotNull(result.PlayerId);
+            Assert.NotNull(result.Player);
             Assert.True(string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]

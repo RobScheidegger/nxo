@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using NXO.Shared.Models
+@inject NavigationManager navigation 
 @inject HttpClient Http
 
 <div class="container">
@@ -25,7 +26,17 @@
             <div class="form-group">
                 <label class="control-label">Create Lobby</label>
                 <select name="GameCode" class="form-control" @bind="LobbyType">
-                    <option value="tictactoe">Tic-Tac-Toe</option>
+                    @if(GameTypes != null)
+                    {
+                        @foreach(var type in GameTypes)
+                        {
+                            <option value="@type.GameType">@type.Name</option>
+                        }
+                    }
+                    else
+                    {
+                        <option>Loading...</option>
+                    }
                 </select>
                 <span asp-validation-for="For" class="text-danger"></span>
             </div>
@@ -48,17 +59,23 @@
     private string LobbyType { get; set; }
 
     private string ErrorMessage { get; set; }
+    private IEnumerable<GameTypesResponse> GameTypes { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        GameTypes = await Http.GetFromJsonAsync<IEnumerable<GameTypesResponse>>("Lobby/GameTypes");
+    }
 
     private async Task ClickCreateGameButton()
     {
         var request = new CreateLobbyRequest()
         {
-            GameType = LobbyType
+            GameType = LobbyType,
+            Nickname = Nickname
         };
-        var result = await Http.PostFromJsonAsync<CreateLobbyRequest, CreateLobbyResult>("Authentication/Create", request);
+        var result = await Http.PostFromJsonAsync<CreateLobbyRequest, CreateLobbyResult>("Lobby/Create", request);
         if(result.Success)
         {
-
+            navigation.NavigateTo($"Lobby/{result.LobbyCode}/{result.PlayerId}");
         }
     }
 
@@ -69,7 +86,7 @@
             GameCode = GameCode,
             Nickname = Nickname
         };
-        var result = await Http.PostFromJsonAsync<JoinRequest, JoinResult>("Authentication/Join", request);
+        var result = await Http.PostFromJsonAsync<JoinRequest, JoinResult>("Lobby/Join", request);
         ErrorMessage = result.Success ? "Yes" : "No";
     }
 }

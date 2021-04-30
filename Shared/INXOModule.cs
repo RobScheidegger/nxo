@@ -10,5 +10,6 @@ namespace NXO.Shared
         string Name { get; }
         void RegisterServices(IServiceCollection services);
         string GameType { get; }
+        Type Settings { get; }
     }
 }

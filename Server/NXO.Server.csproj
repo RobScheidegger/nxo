@@ -13,5 +13,9 @@
     <ProjectReference Include="..\Shared\NXO.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Modules\TicTacToe\" />
+  </ItemGroup>
+
 
 </Project>
