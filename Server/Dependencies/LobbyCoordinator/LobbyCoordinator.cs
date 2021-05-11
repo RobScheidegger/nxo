@@ -10,9 +10,11 @@ namespace NXO.Server.Dependencies
     {
         private readonly IGameRepository gameRepository;
         private readonly Dictionary<string, IModuleManager> moduleManagers;
-        public LobbyCoordinator(IGameRepository gameRepository)
+        private readonly IGuidProvider guid;
+        public LobbyCoordinator(IGameRepository gameRepository, IGuidProvider guid)
         {
             this.gameRepository = gameRepository;
+            this.guid = guid;
         }
         public async Task<JoinResult> AttemptJoinAsync(JoinRequest request)
         {
@@ -46,28 +48,66 @@ namespace NXO.Server.Dependencies
             }
         }
 
-        public Task<CreateLobbyResult> CreateLobbyAsync(CreateLobbyRequest request)
+        public async Task<CreateLobbyResult> CreateLobbyAsync(CreateLobbyRequest request)
         {
-            throw new NotImplementedException();
+            var game = new Game()
+            {
+                DateCreated = DateTime.Now,
+                LobbyCode = guid.NewLobbyCode(),
+                GameType = request.GameType,
+                Nickname = "New Lobby",
+                Players = new Player[]
+                {
+                    new Player()
+                    {
+                        Id = guid.New(),
+                        Nickname = request.Nickname
+                    }
+                },
+                Stage = "Lobby",
+                Settings = new GameSettings()
+                {
+                    MinimumPlayers = 2,
+                    MaximumPlayers = 3
+                }
+            };
+            await gameRepository.AddGameAsync(game);
+            //Configure the game-specific portion using the 
+            return await moduleManagers[request.GameType].CreateLobbyAsync(game);
         }
 
-        public Task<bool> HasLobbyStartedAsync(string LobbyCode)
+        public async Task<bool> HasLobbyStartedAsync(string LobbyCode)
         {
-            throw new NotImplementedException();
+            var game = await gameRepository.GetGameAsync(LobbyCode);
+            return game.Stage == "In Progress" || game.Stage == "Completed";
         }
-        public Task<JoinResult> JoinAsync(JoinRequest request)
+        public async Task<JoinResult> JoinAsync(JoinRequest request)
         {
-            throw new NotImplementedException();
+            var game = await gameRepository.GetGameAsync(request.GameCode);
+            var newPlayer = new Player()
+            {
+                Id = guid.New(),
+                Nickname = request.Nickname
+            };
+            game.Players = game.Players.Append(newPlayer);
+            await gameRepository.UpdateGame(game);
+            return new JoinResult()
+            {
+                GameType = game.GameType,
+                Player = newPlayer,
+                Success = true
+            };
         }
 
-        public Task<bool> LobbyExistsAsync(string LobbyCode)
+        public async Task<bool> LobbyExistsAsync(string LobbyCode)
         {
-            throw new NotImplementedException();
+            return await gameRepository.GameExistsAsync(LobbyCode);
         }
 
-        public Task<bool> SpotAvailableAsync(string LobbyCode)
+        public async Task<bool> SpotAvailableAsync(string LobbyCode)
         {
-            throw new NotImplementedException();
+            var game = await gameRepository.GetGameAsync(LobbyCode);
+            return game.Players.Count() < game.Settings.MaximumPlayers;
         }
     }
 }

@@ -32,9 +32,12 @@ namespace NXO.Server
             //Shared Services
             services.AddSingleton<IGameRepository, InMemoryGameRepository>();
             services.AddSingleton<ILobbyCoordinator, LobbyCoordinator>();
+            services.AddSingleton<IGuidProvider, GuidProvider>();
+            
 
             //TODO: Replace with reflection
             services.AddSingleton<INXOModule, TicTacToeModule>();
+            services.AddScoped<IModuleManager, TicTacToeModuleManager>();
             
         }
 

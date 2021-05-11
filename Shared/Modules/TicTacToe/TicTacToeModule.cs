@@ -11,8 +11,6 @@ namespace NXO.Shared.Modules
 
         public string GameType => "tictactoe";
 
-        public Type Settings => typeof(TicTacToeSettings);
-
         public void RegisterServices(IServiceCollection services)
         {
             throw new NotImplementedException();

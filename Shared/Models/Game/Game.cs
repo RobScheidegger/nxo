@@ -9,6 +9,9 @@ namespace NXO.Shared.Models
         public DateTime DateCreated { get; set; }
         public string LobbyCode { get; set; }
         public string GameType { get; set; }
-        public LobbyStatus LobbyStatus { get; set; }
+        public GameSettings Settings { get; set; }
+        public string Nickname { get; set; }
+        public IEnumerable<Player> Players { get; set; }
+        public string Stage { get; set; }
     }
 }

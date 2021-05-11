@@ -4,9 +4,9 @@ using System.Text;
 
 namespace NXO.Shared.Models
 {
-    public class GameMove<T> where T : class
+    public interface IGameMove
     {
         public string PlayerId { get; set; }
-        public T GameSpecificMove { get; set; }
+        public string LobbyCode { get;set; }
     }
 }
