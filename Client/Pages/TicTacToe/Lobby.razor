@@ -3,13 +3,20 @@
 @using System.Timers; 
 <h3>Lobby</h3>
 
-<h4>Code: @Status.LobbyCode</h4>
+<h4>Code: @Status?.LobbyCode</h4>
 
 <h4>Players:</h4>
 <table>
-    @foreach(var player in Status.Players)
+    @if (Status != null)
     {
-        <tr><td>@player.Nickname</td></tr> 
+        @foreach (var player in Status?.Players)
+        {
+            <tr><td>@player?.Nickname</td></tr> 
+        }
+    }
+    else
+    {
+        <div>Loading...</div>
     }
 </table>
 
@@ -22,28 +29,31 @@
     public TicTacToeSettings Settings { get; set; }
     protected override async Task OnInitializedAsync()
     {
+        /*
         var timer = new Timer(1000);
-        timer.Elapsed += async (obj, e) =>
-        {
-            try
-            {
-                var request = new LobbyStatusRequest()
-                {
-                    LobbyCode = LobbyCode
-                };
-                var result = await Http.PostFromJsonAsync<LobbyStatusRequest, LobbyStatusResult<TicTacToeSettings>>("TicTacToe/LobbyStatus", request);
-                Status = result.Game;
-                Settings = result.Settings;
-            }
-            catch (Exception err)
-            {
-                Console.WriteLine("ERROR" + err.Message);
-                timer.Stop();
-            }
-        };
+        timer.Elapsed += async (obj, e) => await Refresh();
         timer.Start();
+        */
+        await Refresh();
 
-
-        base.OnInitialized();
+        await base.OnInitializedAsync();
+    }
+    private async Task Refresh()
+    {
+        try
+        {
+            var request = new LobbyStatusRequest()
+            {
+                LobbyCode = LobbyCode
+            };
+            var result = await Http.PostFromJsonAsync<LobbyStatusRequest, LobbyStatusResult<TicTacToeSettings>>("TicTacToe/LobbyStatus", request);
+            Console.Write(result);
+            Status = result?.Game;
+            Settings = result?.Settings;
+        }
+        catch (Exception err)
+        {
+            Console.WriteLine("ERROR" + err.Message);
+        }
     }
 }

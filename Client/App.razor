@@ -1,18 +1,9 @@
 @using NXO.Client.Pages 
 <Router AppAssembly="@typeof(Program).Assembly">
     <Found Context="routeData">
-        @if (routeData.PageType == typeof(Login))
-        {
-            <RouteView RouteData="@routeData"></RouteView>
-        }
-        else
-        {
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        }
-        </Found>
+        <RouteView RouteData="@routeData"></RouteView>
+    </Found>
     <NotFound>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p>Sorry, there's nothing at this address.</p>
-        </LayoutView>
+        <p>Sorry, there's nothing at this address.</p>
     </NotFound>
 </Router>
