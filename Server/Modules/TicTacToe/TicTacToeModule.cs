@@ -1,4 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using NXO.Server.Dependencies;
+using NXO.Server.Modules;
+using NXO.Shared.Repository;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,7 +16,9 @@ namespace NXO.Shared.Modules
 
         public void RegisterServices(IServiceCollection services)
         {
-            throw new NotImplementedException();
+            services.AddSingleton<IRepository<TicTacToeSettings>, InMemoryRepository<TicTacToeSettings>>();
+            services.AddSingleton<IModuleManager, TicTacToeModuleManager>();
         }
+
     }
 }

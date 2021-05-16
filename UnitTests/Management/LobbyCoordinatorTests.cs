@@ -4,15 +4,18 @@ using Moq;
 using NXO.Server.Dependencies;
 using NXO.Shared.Models;
 using System.Threading.Tasks;
+using NXO.Shared.Repository;
 
 namespace NXO.UnitTests.Management
 { 
     public class LobbyCoordinatorTests
     {
         internal LobbyCoordinator manager { get; set; }
+        Mock<IRepository<Game>> gameMock = new Mock<IRepository<Game>>();
+        Mock<IGuidProvider> guidMock = new Mock<IGuidProvider>();
         public LobbyCoordinatorTests()
         {
-            
+            manager = new LobbyCoordinator(gameMock.Object, guidMock.Object, null);
         }
         [Fact]
         public async Task AttemptJoin_LobbyCodeNull()

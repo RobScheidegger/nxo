@@ -44,5 +44,7 @@ namespace NXO.Server.Controllers
         {
             return await lobbyCoordinator.CreateLobbyAsync(request);
         }
+        
+        
     }
 }

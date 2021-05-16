@@ -23,7 +23,24 @@ namespace NXO.UnitTests.Management
             var guid = provider.New();
             //Assert
             Assert.True(!string.IsNullOrEmpty(guid));
-            Console.WriteLine(guid);
+        }
+        [Fact]
+        public void New_Unique()
+        {
+            //Act
+            var guid1 = provider.New();
+            var guid2 = provider.New();
+            //Assert
+            Assert.NotEqual(guid1, guid2);
+        }
+        [Fact]
+        public void LobbyCode_Alphabetic()
+        {
+            //Act
+            var code = provider.NewLobbyCode();
+            //Assert
+            Assert.True(code.All(char.IsLetter));
+            
         }
     }
 }

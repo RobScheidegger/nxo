@@ -7,6 +7,7 @@ namespace NXO.Shared.Modules
 {
     public class TicTacToeSettings : IGameSettings
     {
-
+        public int BoardSize { get; set; }
+        public int Dimensions { get; set; }
     }
 }

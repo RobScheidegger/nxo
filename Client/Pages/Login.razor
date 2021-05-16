@@ -15,17 +15,17 @@
             }
             <div class="form-group">
                 <label class="control-label">Game Code</label>
-                <input name="GameCode" class="form-control" @bind-value="GameCode" />
+                <input name="GameCode" class="form-control" @bind-value="@GameCode" />
                 <span asp-validation-for="For" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label class="control-label">Nickname</label>
-                <input name="GameCode" class="form-control" @bind-value="Nickname" />
+                <input name="GameCode" class="form-control" @bind-value="@Nickname" />
                 <span asp-validation-for="For" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label class="control-label">Create Lobby</label>
-                <select name="GameCode" class="form-control" @bind="LobbyType">
+                <select name="GameCode" class="form-control" @bind="@LobbyType">
                     @if(GameTypes != null)
                     {
                         @foreach(var type in GameTypes)
@@ -63,6 +63,7 @@
     protected override async Task OnInitializedAsync()
     {
         GameTypes = await Http.GetFromJsonAsync<IEnumerable<GameTypesResponse>>("Lobby/GameTypes");
+        LobbyType = GameTypes.FirstOrDefault()?.GameType;
     }
 
     private async Task ClickCreateGameButton()
@@ -75,7 +76,7 @@
         var result = await Http.PostFromJsonAsync<CreateLobbyRequest, CreateLobbyResult>("Lobby/Create", request);
         if(result.Success)
         {
-            navigation.NavigateTo($"Lobby/{result.LobbyCode}/{result.PlayerId}");
+            navigation.NavigateTo($"{LobbyType}/lobby/{result.LobbyCode}/{result.PlayerId}");
         }
     }
 

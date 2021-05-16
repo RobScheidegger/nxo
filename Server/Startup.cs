@@ -7,7 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NXO.Server.Dependencies;
 using NXO.Shared;
+using NXO.Shared.Models;
 using NXO.Shared.Modules;
+using NXO.Shared.Repository;
 using System.Linq;
 
 namespace NXO.Server
@@ -30,14 +32,20 @@ namespace NXO.Server
             services.AddRazorPages();
 
             //Shared Services
-            services.AddSingleton<IGameRepository, InMemoryGameRepository>();
+            services.AddSingleton<IRepository<Game>, InMemoryRepository<Game>>();
             services.AddSingleton<ILobbyCoordinator, LobbyCoordinator>();
             services.AddSingleton<IGuidProvider, GuidProvider>();
             
 
             //TODO: Replace with reflection
             services.AddSingleton<INXOModule, TicTacToeModule>();
-            services.AddScoped<IModuleManager, TicTacToeModuleManager>();
+
+            var provider = services.BuildServiceProvider();
+            var modules = provider.GetServices<INXOModule>();
+            foreach (var module in modules)
+            {
+                module.RegisterServices(services);
+            }
             
         }
 

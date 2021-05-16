@@ -1,4 +1,6 @@
-﻿using NXO.Shared.Models;
+﻿using NXO.Shared;
+using NXO.Shared.Models;
+using NXO.Shared.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +10,14 @@ namespace NXO.Server.Dependencies
 {
     public class LobbyCoordinator : ILobbyCoordinator
     {
-        private readonly IGameRepository gameRepository;
-        private readonly Dictionary<string, IModuleManager> moduleManagers;
+        private readonly IRepository<Game> gameRepository;
+        private readonly Dictionary<string, IModuleManager> modules;
         private readonly IGuidProvider guid;
-        public LobbyCoordinator(IGameRepository gameRepository, IGuidProvider guid)
+        public LobbyCoordinator(IRepository<Game> gameRepository, IGuidProvider guid, IEnumerable<IModuleManager> modules)
         {
             this.gameRepository = gameRepository;
             this.guid = guid;
+            this.modules = modules.ToDictionary(i => i.GameType, i => i);
         }
         public async Task<JoinResult> AttemptJoinAsync(JoinRequest request)
         {
@@ -50,6 +53,11 @@ namespace NXO.Server.Dependencies
 
         public async Task<CreateLobbyResult> CreateLobbyAsync(CreateLobbyRequest request)
         {
+            var player = new Player()
+            {
+                Id = guid.New(),
+                Nickname = request.Nickname
+            };
             var game = new Game()
             {
                 DateCreated = DateTime.Now,
@@ -58,11 +66,7 @@ namespace NXO.Server.Dependencies
                 Nickname = "New Lobby",
                 Players = new Player[]
                 {
-                    new Player()
-                    {
-                        Id = guid.New(),
-                        Nickname = request.Nickname
-                    }
+                    player
                 },
                 Stage = "Lobby",
                 Settings = new GameSettings()
@@ -71,26 +75,32 @@ namespace NXO.Server.Dependencies
                     MaximumPlayers = 3
                 }
             };
-            await gameRepository.AddGameAsync(game);
+            await gameRepository.Add(game.LobbyCode, game);
             //Configure the game-specific portion using the 
-            return await moduleManagers[request.GameType].CreateLobbyAsync(game);
+            await modules[request.GameType].CreateLobbyAsync(game);
+            return new CreateLobbyResult()
+            {
+                LobbyCode = game.LobbyCode,
+                Message = "Game created successfully",
+                PlayerId = player.Id,
+                Success = true
+            };
         }
 
         public async Task<bool> HasLobbyStartedAsync(string LobbyCode)
         {
-            var game = await gameRepository.GetGameAsync(LobbyCode);
+            var game = await gameRepository.Find(LobbyCode);
             return game.Stage == "In Progress" || game.Stage == "Completed";
         }
         public async Task<JoinResult> JoinAsync(JoinRequest request)
         {
-            var game = await gameRepository.GetGameAsync(request.GameCode);
+            var game = await gameRepository.Find(request.GameCode);
             var newPlayer = new Player()
             {
                 Id = guid.New(),
                 Nickname = request.Nickname
             };
-            game.Players = game.Players.Append(newPlayer);
-            await gameRepository.UpdateGame(game);
+            await gameRepository.Update(request.GameCode, g => g.Players = g.Players.Append(newPlayer));
             return new JoinResult()
             {
                 GameType = game.GameType,
@@ -101,12 +111,12 @@ namespace NXO.Server.Dependencies
 
         public async Task<bool> LobbyExistsAsync(string LobbyCode)
         {
-            return await gameRepository.GameExistsAsync(LobbyCode);
+            return await gameRepository.Exists(LobbyCode);
         }
 
         public async Task<bool> SpotAvailableAsync(string LobbyCode)
         {
-            var game = await gameRepository.GetGameAsync(LobbyCode);
+            var game = await gameRepository.Find(LobbyCode);
             return game.Players.Count() < game.Settings.MaximumPlayers;
         }
     }

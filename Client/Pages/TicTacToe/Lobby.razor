@@ -1,0 +1,49 @@
+﻿@page "/tictactoe/lobby/{LobbyCode}/{PlayerId}" 
+@inject HttpClient Http 
+@using System.Timers; 
+<h3>Lobby</h3>
+
+<h4>Code: @Status.LobbyCode</h4>
+
+<h4>Players:</h4>
+<table>
+    @foreach(var player in Status.Players)
+    {
+        <tr><td>@player.Nickname</td></tr> 
+    }
+</table>
+
+@code {
+    [Parameter]
+    public string LobbyCode { get; set; }
+    [Parameter]
+    public string PlayerId { get; set; }
+    public Game Status { get; set; }
+    public TicTacToeSettings Settings { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var timer = new Timer(1000);
+        timer.Elapsed += async (obj, e) =>
+        {
+            try
+            {
+                var request = new LobbyStatusRequest()
+                {
+                    LobbyCode = LobbyCode
+                };
+                var result = await Http.PostFromJsonAsync<LobbyStatusRequest, LobbyStatusResult<TicTacToeSettings>>("TicTacToe/LobbyStatus", request);
+                Status = result.Game;
+                Settings = result.Settings;
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine("ERROR" + err.Message);
+                timer.Stop();
+            }
+        };
+        timer.Start();
+
+
+        base.OnInitialized();
+    }
+}
