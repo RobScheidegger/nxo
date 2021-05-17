@@ -14,14 +14,14 @@ namespace NXO.Server.Modules
     {
         private readonly IGuidProvider guid;
         private readonly IRepository<TicTacToeSettings> settingsRepository;
-        private readonly IRepository<TicTacToeGameStatus> gameStatus;
+        private readonly IRepository<TicTacToeGameStatus> gameStatusRepository;
         private readonly IRepository<Game> gameRepository;
         public TicTacToeModuleManager(IGuidProvider guid, IRepository<TicTacToeSettings> settings, IRepository<Game> gameRepository, IRepository<TicTacToeGameStatus> gameStatus)
         {
             this.guid = guid;
             this.settingsRepository = settings;
             this.gameRepository = gameRepository;
-            this.gameStatus = gameStatus;
+            this.gameStatusRepository = gameStatus;
         }
         public string GameType => "tictactoe";
 
@@ -47,7 +47,7 @@ namespace NXO.Server.Modules
         }
         public  async Task<IGameStatus> GetGameStateAsync(string LobbyCode)
         {
-            return await gameStatus.Find(LobbyCode);
+            return await gameStatusRepository.Find(LobbyCode);
         }
 
         public async Task<IGameSettings> GetSettings(string LobbyCode)
@@ -79,8 +79,12 @@ namespace NXO.Server.Modules
         public async Task StartGame(string LobbyCode)
         {
             var game = await settingsRepository.Find(LobbyCode);
-            var sizes = Enumerable.Range(0, game.Dimensions).Select(i => game.BoardSize).ToArray();
-            Array arr = Array.CreateInstance(typeof(int), sizes);
+
+            var gameStatus = new TicTacToeGameStatus();
+
+            //..Stuff
+
+            await gameStatusRepository.Add(LobbyCode, gameStatus);
         }
     }
 }

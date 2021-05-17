@@ -16,36 +16,33 @@
                 Players
             </div>
             <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Id</th>
+                            <th>Nickname</th>
+                        </tr>
+                    </thead>
+                    @if (Status != null)
+                    {
+                        @foreach (var player in Status.Players.Where(i => i != null))
+                        {
+                            <tr>
+                                <td>@player.Id</td>
+                                <td>@player.Nickname</td>
+                            </tr>
 
+                        }
+                    }
+                    else
+                    {
+                        <div>Loading...</div>
+                    }
+                </table>
             </div>
         </div>
     </div>
 </div>
-<div class="card-shadow">
-
-</div>
-<table>
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Nickname</th>
-        </tr>
-    </thead>
-    @if (Status != null)
-    {
-        @foreach (var player in Status.Players.Where(i => i != null))
-        {
-            <tr>
-                <td>@player.Id</td>
-                <td>@player.Nickname</td>
-            </tr> 
-        }
-    }
-    else
-    {
-        <div>Loading...</div>
-    }
-</table>
 
 @code {
     [Parameter]
