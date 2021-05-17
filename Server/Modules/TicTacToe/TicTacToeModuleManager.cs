@@ -30,7 +30,8 @@ namespace NXO.Server.Modules
             var setting = new TicTacToeSettings()
             { 
                 BoardSize = 3,
-                Dimensions = 2
+                Dimensions = 2,
+                MaximumPlayers = 2
             };
             await settingsRepository.Add(game.LobbyCode, setting);
             return true;

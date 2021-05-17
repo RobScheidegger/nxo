@@ -1,48 +1,86 @@
-﻿@page "/tictactoe/lobby/{LobbyCode}/{PlayerId}" 
-@inject HttpClient Http 
+﻿@page "/tictactoe/lobby/{LobbyCode}/{PlayerId}"
+@inject HttpClient Http
+@using System.Timers 
 
-<div>
-    <h3>Lobby</h3>
-</div>
-
-<div>
-    <h4>Code: @Status?.LobbyCode</h4>
-</div>
-
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card shadow">
-            <div class="card-header">
-                Players
+<div class="container">
+    @if (Message != null){
+        <div class="alert alert-@MessageType">
+            @Message
+        </div>
+    }
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header">
+                    Tic-Tac-Toe Lobby
+                </div>
+                <div class="card-body">
+                    <div>Code: @Status?.LobbyCode</div>
+                    @if (Settings != null && Status?.HostPlayerId == PlayerId)
+                    {
+                        <h4>Game Settings</h4>
+                        <div class="form-group">
+                            <label class="control-label">Maximum Players</label>
+                            <input class="form-control" @bind-value="@Settings.MaximumPlayers" type="number" />
+                        </div>
+                        <h4>Game Configuration</h4>
+                        <div class="form-group">
+                            <label class="control-label">Dimensions</label>
+                            <input class="form-control" @bind-value="@Settings.Dimensions" type="number" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Board Size</label>
+                            <input class="form-control" @bind-value="@Settings.BoardSize" type="number" />
+                        </div>
+                        <div class="form-group mt-2">
+                            <a class="btn btn-primary" @onclick="ClickSaveSettings">Save Settings</a>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="card-body">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>Nickname</th>
-                        </tr>
-                    </thead>
-                    @if (Status != null)
-                    {
-                        @foreach (var player in Status.Players.Where(i => i != null))
-                        {
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    Players
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover">
+                        <thead>
                             <tr>
-                                <td>@player.Id</td>
-                                <td>@player.Nickname</td>
+                                <th>Id</th>
+                                <th>Nickname</th>
                             </tr>
+                        </thead>
+                        <tbody>
+                            @if (Status != null)
+                            {
+                                @foreach (var player in Status.Players.Where(i => i != null))
+                                {
+                                    <tr>
+                                        <td>@player.Id</td>
+                                        <td>@player.Nickname</td>
+                                    </tr>
 
-                        }
-                    }
-                    else
-                    {
-                        <div>Loading...</div>
-                    }
-                </table>
+                                }
+                            }
+                            else
+                            {
+                                <div>Loading...</div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
+@if (Status?.HostPlayerId == PlayerId)
+{
+<div class="fixed-bottom float-right p-4">
+    <a class="btn btn-success" @onclick="ClickStartGame">Start Game</a>
+</div>
+}
 
 @code {
     [Parameter]
@@ -51,14 +89,15 @@
     public string PlayerId { get; set; }
     public Game Status { get; set; }
     public TicTacToeSettings Settings { get; set; }
+    public string Message { get; set; }
+    public string MessageType { get; set; }
+    private const int TimerInterval = 1000;
     protected override async Task OnInitializedAsync()
     {
-        /*
-        var timer = new Timer(1000);
+        await Refresh();
+        var timer = new Timer(TimerInterval);
         timer.Elapsed += async (obj, e) => await Refresh();
         timer.Start();
-        */
-        await Refresh();
 
         await base.OnInitializedAsync();
     }
@@ -71,13 +110,24 @@
                 LobbyCode = LobbyCode
             };
             var result = await Http.PostFromJsonAsync<LobbyStatusRequest, LobbyStatusResult<TicTacToeSettings>>("TicTacToe/LobbyStatus", request);
-            Console.Write(result);
-            Status = result?.Game;
-            Settings = result?.Settings;
+            Status = result.Game;
+            Settings = result.Settings;
+            StateHasChanged();
         }
         catch (Exception err)
         {
             Console.WriteLine("ERROR" + err.Message);
         }
+    }
+    private async Task ClickSaveSettings()
+    {
+        Settings.LobbyCode = LobbyCode;
+        var result = await Http.PostFromJsonAsync<TicTacToeSettings, SaveSettingsResult>("TicTacToe/SaveSettings", Settings);
+        Message = result.Message;
+        MessageType = result.Success ? "success" : "danger";
+    }
+    private async Task ClickStartGame()
+    {
+
     }
 }

@@ -26,7 +26,7 @@ namespace NXO.Server.Dependencies
                 return new JoinResult()
                 {
                     Success = false,
-                    RejectMessage = $"Lobby with code {request.GameCode} does not exist." 
+                    RejectMessage = $"Lobby with code '{request.GameCode}' does not exist." 
                 };
             }
             else if(await HasLobbyStartedAsync(request.GameCode))
@@ -34,7 +34,7 @@ namespace NXO.Server.Dependencies
                 return new JoinResult()
                 {
                     Success = false,
-                    RejectMessage = $"Lobby {request.GameCode} has already begun."
+                    RejectMessage = $"Lobby '{request.GameCode}' has already begun."
                 };
             }
             else if (!(await SpotAvailableAsync(request.GameCode)))
@@ -42,7 +42,7 @@ namespace NXO.Server.Dependencies
                 return new JoinResult()
                 {
                     Success = false,
-                    RejectMessage = $"No spot is available in the lobby {request.GameCode}"
+                    RejectMessage = $"No spot is available in the lobby '{request.GameCode}'"
                 };
             }
             else
@@ -73,7 +73,8 @@ namespace NXO.Server.Dependencies
                 {
                     MinimumPlayers = 2,
                     MaximumPlayers = 3
-                }
+                },
+                HostPlayerId = player.Id
             };
             await gameRepository.Add(game.LobbyCode, game);
             //Configure the game-specific portion using the 

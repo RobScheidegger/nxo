@@ -14,7 +14,7 @@ namespace NXO.Client
             var result = await client.PostAsJsonAsync(uri, request);
             //var resultString = result.Content.ReadAsStringAsync();
             var jsonResult = await result.Content.ReadFromJsonAsync(typeof(S));
-            return jsonResult as S;
+            return (S)jsonResult;
         }
     }
 }

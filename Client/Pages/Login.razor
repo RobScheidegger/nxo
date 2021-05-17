@@ -20,12 +20,10 @@
                 <div class="form-group">
                     <label class="control-label">Game Code</label>
                     <input name="GameCode" class="form-control" @bind-value="@GameCode" />
-                    <span asp-validation-for="For" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Nickname</label>
                     <input name="GameCode" class="form-control" @bind-value="@Nickname" />
-                    <span asp-validation-for="For" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Create Lobby</label>
@@ -42,11 +40,26 @@
                             <option>Loading...</option>
                         }
                     </select>
-                    <span asp-validation-for="For" class="text-danger"></span>
                 </div>
-                <div class="row mt-2">
-                    <a class="btn btn-success col-lg-6 m-2" @onclick="ClickCreateGameButton" href="#"><i class="fas fa-plus mr-1"></i>New Lobby</a>
-                    <a class="btn btn-primary col-lg-6 m-2" @onclick="ClickJoinButton" href="#"><i class="fas fa-plus mr-1"></i>Join</a>
+                <div class="m-2">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="m-1">
+                                <a class="btn btn-success col-lg-12" @onclick="ClickCreateGameButton" href="#">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    New Lobby
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="m-1">
+                                <a class="btn btn-primary col-lg-12" @onclick="ClickJoinButton" href="#">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Join
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -61,7 +74,6 @@
     private string GameCode { get; set; }
     private string Nickname { get; set; }
     private string LobbyType { get; set; }
-
     private string ErrorMessage { get; set; }
     private IEnumerable<GameTypesResponse> GameTypes { get; set; }
     protected override async Task OnInitializedAsync()
@@ -92,6 +104,14 @@
             Nickname = Nickname
         };
         var result = await Http.PostFromJsonAsync<JoinRequest, JoinResult>("Lobby/Join", request);
-        ErrorMessage = result.Success ? "Yes" : "No";
+        if(result.Success)
+        {
+            navigation.NavigateTo($"{LobbyType}/lobby/{GameCode}/{result.Player.Id}");
+        }
+        else
+        {
+            ErrorMessage = result.RejectMessage;
+        }
+
     }
 }
