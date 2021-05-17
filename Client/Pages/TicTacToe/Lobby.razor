@@ -1,17 +1,44 @@
 ﻿@page "/tictactoe/lobby/{LobbyCode}/{PlayerId}" 
 @inject HttpClient Http 
-@using System.Timers; 
-<h3>Lobby</h3>
 
-<h4>Code: @Status?.LobbyCode</h4>
+<div>
+    <h3>Lobby</h3>
+</div>
 
-<h4>Players:</h4>
+<div>
+    <h4>Code: @Status?.LobbyCode</h4>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                Players
+            </div>
+            <div class="card-body">
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card-shadow">
+
+</div>
 <table>
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nickname</th>
+        </tr>
+    </thead>
     @if (Status != null)
     {
-        @foreach (var player in Status?.Players)
+        @foreach (var player in Status.Players.Where(i => i != null))
         {
-            <tr><td>@player?.Nickname</td></tr> 
+            <tr>
+                <td>@player.Id</td>
+                <td>@player.Nickname</td>
+            </tr> 
         }
     }
     else

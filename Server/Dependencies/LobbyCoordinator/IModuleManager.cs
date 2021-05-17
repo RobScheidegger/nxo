@@ -19,8 +19,9 @@ namespace NXO.Server.Dependencies
         Task<bool> CreateLobbyAsync(Game game);
         Task<MoveResult> PerformMoveAsync(IGameMove move);
         Task<SaveSettingsResult> SaveSettingsAsync(IGameSettings settings);
-        Task<T> GetGameStateAsync<T>(string LobbyCode);
+        Task<IGameStatus> GetGameStateAsync(string LobbyCode);
         Task<IGameSettings> GetSettings(string LobbyCode);
         Task<LobbyStatusResult<T>> GetLobbyStatus<T>(LobbyStatusRequest request) where T : class, IGameSettings;
+        Task StartGame(string LobbyCode);
     }
 }

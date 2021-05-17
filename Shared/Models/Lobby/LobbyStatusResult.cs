@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NXO.Shared.Models
 {
-    public class LobbyStatusResult<SettingsType> where SettingsType : IGameSettings
+    public class LobbyStatusResult<SettingsType>
     {
         public Game Game { get; set; }
         public SettingsType Settings { get; set; }

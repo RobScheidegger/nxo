@@ -10,5 +10,12 @@
     [Parameter]
     public string PlayerId { get; set; }
 
+    public TicTacToeGameStatus GameState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var status = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+        await base.OnInitializedAsync();
+    }
 
 }

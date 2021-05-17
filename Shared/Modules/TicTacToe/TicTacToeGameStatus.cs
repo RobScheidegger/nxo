@@ -7,6 +7,6 @@ namespace NXO.Shared.Modules
 {
     public class TicTacToeGameStatus : IGameStatus
     {
-
+        public Array Test { get; set; }
     }
 }

@@ -6,5 +6,6 @@ namespace NXO.Shared.Models
 {
     public interface IGameSettings
     {
+        public string LobbyCode { get; set; }
     }
 }

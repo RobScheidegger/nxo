@@ -9,5 +9,6 @@ namespace NXO.Shared.Modules
     {
         public int BoardSize { get; set; }
         public int Dimensions { get; set; }
+        public string LobbyCode { get; set; }
     }
 }

@@ -35,7 +35,7 @@ namespace NXO.Server.Controllers
         [HttpPost("GetGameStatus")]
         public async Task<GameStatusClass> GetGameStatus(string LobbyCode)
         {
-            return await manager.GetGameStateAsync<GameStatusClass>(LobbyCode);
+            return await manager.GetGameStateAsync(LobbyCode) as GameStatusClass;
         }
         [HttpPost("LobbyStatus")]
         public async Task<LobbyStatusResult<SettingsClass>> Status(LobbyStatusRequest request)

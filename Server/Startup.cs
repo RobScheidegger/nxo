@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NXO.Server.Dependencies;
+using NXO.Server.Services;
 using NXO.Shared;
 using NXO.Shared.Models;
 using NXO.Shared.Modules;
@@ -46,6 +47,8 @@ namespace NXO.Server
             {
                 module.RegisterServices(services);
             }
+
+            services.AddHostedService<DebugDataService>();
             
         }
 

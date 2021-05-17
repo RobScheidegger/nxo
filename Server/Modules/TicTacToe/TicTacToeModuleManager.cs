@@ -13,13 +13,15 @@ namespace NXO.Server.Modules
     public class TicTacToeModuleManager : IModuleManager
     {
         private readonly IGuidProvider guid;
-        private readonly IRepository<TicTacToeSettings> settings;
+        private readonly IRepository<TicTacToeSettings> settingsRepository;
+        private readonly IRepository<TicTacToeGameStatus> gameStatus;
         private readonly IRepository<Game> gameRepository;
-        public TicTacToeModuleManager(IGuidProvider guid, IRepository<TicTacToeSettings> settings, IRepository<Game> gameRepository)
+        public TicTacToeModuleManager(IGuidProvider guid, IRepository<TicTacToeSettings> settings, IRepository<Game> gameRepository, IRepository<TicTacToeGameStatus> gameStatus)
         {
             this.guid = guid;
-            this.settings = settings;
+            this.settingsRepository = settings;
             this.gameRepository = gameRepository;
+            this.gameStatus = gameStatus;
         }
         public string GameType => "tictactoe";
 
@@ -30,7 +32,7 @@ namespace NXO.Server.Modules
                 BoardSize = 3,
                 Dimensions = 2
             };
-            await settings.Add(game.LobbyCode, setting);
+            await settingsRepository.Add(game.LobbyCode, setting);
             return true;
         }
         public async Task<LobbyStatusResult<T>> GetLobbyStatus<T>(LobbyStatusRequest request) where T : class, IGameSettings
@@ -43,25 +45,42 @@ namespace NXO.Server.Modules
                 Settings = settings as T
             };
         }
-        public Task<T> GetGameStateAsync<T>(string LobbyCode)
+        public  async Task<IGameStatus> GetGameStateAsync(string LobbyCode)
         {
-            throw new NotImplementedException();
+            return await gameStatus.Find(LobbyCode);
         }
 
         public async Task<IGameSettings> GetSettings(string LobbyCode)
         {
-            return await settings.Find(LobbyCode);
+            return await settingsRepository.Find(LobbyCode);
         }
 
         public Task<MoveResult> PerformMoveAsync(IGameMove move)
         {
+            var properMove = move;
             throw new NotImplementedException();
         }
 
-        public Task<SaveSettingsResult> SaveSettingsAsync(IGameSettings settings)
+        public async Task<SaveSettingsResult> SaveSettingsAsync(IGameSettings settings)
         {
             var properSettings = settings as TicTacToeSettings;
-            throw new NotImplementedException();
+            await settingsRepository.Update(properSettings.LobbyCode, s =>
+            {
+                s.BoardSize = properSettings.BoardSize;
+                s.Dimensions = properSettings.Dimensions;
+            });
+            return new SaveSettingsResult()
+            {
+                Message = "Saved",
+                Success = true
+            };
+        }
+
+        public async Task StartGame(string LobbyCode)
+        {
+            var game = await settingsRepository.Find(LobbyCode);
+            var sizes = Enumerable.Range(0, game.Dimensions).Select(i => game.BoardSize).ToArray();
+            Array arr = Array.CreateInstance(typeof(int), sizes);
         }
     }
 }
