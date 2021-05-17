@@ -7,6 +7,9 @@ namespace NXO.Shared.Modules
 {
     public class TicTacToeGameStatus : IGameStatus
     {
-        public Array Test { get; set; }
+        /// <summary>
+        /// Dictionary of player moves by player Id
+        /// </summary>
+        public Dictionary<string, List<int[]>> PlayerMoves { get; set; }
     }
 }

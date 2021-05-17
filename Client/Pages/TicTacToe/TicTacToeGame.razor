@@ -3,6 +3,34 @@
 @using System.Timers;
 
 <h3>Tic Tac Toe</h3>
+<div class="row">
+    <div class="col-lg-2">
+
+    </div>
+    <div class="col-lg-8">
+        <div class="board">
+            @if(GameState != null)
+            {
+                @foreach(var playerMove in GameState.PlayerMoves)
+                {
+                    <div>
+                        @playerMove.Key
+                    </div>
+                    <div>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <div>Loading...</div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-2">
+
+    </div>
+</div>
 
 @code {
     [Parameter]
@@ -17,5 +45,11 @@
         var status = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
         await base.OnInitializedAsync();
     }
-
+    private Array ConstructArray()
+    {
+        var board = Array.CreateInstance(typeof(int), new int[] { 1, 2, 3, 4, 5 });
+        var value = (int)board.GetValue(new int[] { 1, 4 });
+        
+        return board;
+    }
 }
