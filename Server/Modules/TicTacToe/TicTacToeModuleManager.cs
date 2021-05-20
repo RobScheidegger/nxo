@@ -48,7 +48,8 @@ namespace NXO.Server.Modules
         }
         public  async Task<IGameStatus> GetGameStateAsync(string LobbyCode)
         {
-            return await gameStatusRepository.Find(LobbyCode);
+            var status = await gameStatusRepository.Find(LobbyCode);
+            return status;
         }
 
         public async Task<IGameSettings> GetSettings(string LobbyCode)
@@ -79,11 +80,23 @@ namespace NXO.Server.Modules
 
         public async Task StartGame(string LobbyCode)
         {
-            var game = await settingsRepository.Find(LobbyCode);
+            var gameSettings = await settingsRepository.Find(LobbyCode);
 
-            var gameStatus = new TicTacToeGameStatus();
+            var game = await gameRepository.Find(LobbyCode);
 
-            //..Stuff
+            var playerCount = game.Players.Count();
+            var rand = new Random();
+
+            var startingPlayer = game.Players.ElementAt(rand.Next(0, playerCount));
+            var lengths = Enumerable.Range(0, gameSettings.Dimensions).Select(i => gameSettings.BoardSize);
+
+            var gameStatus = new TicTacToeGameStatus()
+            {
+                CurrentPlayerId = startingPlayer.Id,
+                Board = TicTacToeBoard.Construct(gameSettings.Dimensions, gameSettings.BoardSize)
+            };
+
+            gameStatus.Board.Boards.Append(null);
 
             await gameStatusRepository.Add(LobbyCode, gameStatus);
         }

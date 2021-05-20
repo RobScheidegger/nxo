@@ -1,6 +1,7 @@
 ﻿using NXO.Shared.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace NXO.Shared.Modules
@@ -8,8 +9,35 @@ namespace NXO.Shared.Modules
     public class TicTacToeGameStatus : IGameStatus
     {
         /// <summary>
-        /// Dictionary of player moves by player Id
+        /// Array representing the current state of the game board, with 
         /// </summary>
-        public Dictionary<string, List<int[]>> PlayerMoves { get; set; }
+        public TicTacToeBoard Board { get; set; }
+        public string CurrentPlayerId { get; set; }
+
+     }
+    public class TicTacToeBoard
+    { 
+        public static TicTacToeBoard Construct(int Dimensions, int BoardSize, int? Position = null)
+        {
+            if (Dimensions >= 0)
+            {
+                var board = new TicTacToeBoard()
+                {
+                    Boards = Dimensions == 0 ? null : Enumerable.Range(0, BoardSize).Select(i => Construct(Dimensions - 1, BoardSize, i)).ToList(),
+                    Endpoint = Dimensions == 0,
+                    Dimension = Dimensions,
+                    Position = Position
+                };
+                return board;
+            }
+            else
+                return null;
+        }
+        public IEnumerable<TicTacToeBoard> Boards { get; set; }
+        public bool Endpoint { get; set; } = false;
+        public char? Cell { get; set; } 
+        public int Dimension { get; set; }
+        public int? Position { get; set; }
     }
+
 }

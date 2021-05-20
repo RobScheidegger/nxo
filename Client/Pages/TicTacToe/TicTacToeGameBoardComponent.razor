@@ -1,0 +1,50 @@
+﻿@if (Board != null)    
+{
+    if (Board.Dimension % 2 == 1)
+    {
+        <div class="p-2">
+            <table class="table m-0">
+                @foreach (var board in Board.Boards)
+                {
+                <tr>
+                    <td class="border"><TicTacToeGameBoardComponent Board="board" Path="Path.Append(board.Position.Value)" ClickCell="ClickCell"/></td>
+                </tr>
+                   
+                }
+            </table>
+        </div>
+    }
+    else if (Board.Dimension >= 2)
+    {
+        <div class="p-2">
+            <table class="table m-0" style="table-layout: fixed;">
+                @foreach (var board in Board.Boards)
+                {
+                    var trStyle = board.Dimension == 1 ? $"width: {(board.Boards.Count() + 1) * CellWidth}px;" : "";
+                    <tr style="@trStyle display: block">
+                        @foreach (var subBoard in board.Boards)
+                        {
+                            var css = subBoard.Dimension == 0 ? $"display: inline-block; width: {CellWidth}px; height: {CellHeight}px;" : "";
+                            <td class="border m-0" style="@css"><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position.Value).Append(subBoard.Position.Value)" ClickCell="ClickCell"/></td>
+                        }
+                    </tr>
+                }
+            </table>
+        </div>
+    }
+    else //0
+    {
+        <a @onclick="async () => ClickCell(Path)" class="m-0 h-100 w-100" style="display: inline-block"><div class="text-center p-0 text-primary">@Board.Cell</div></a>
+    }
+}
+
+@code {
+    [Parameter]
+    public TicTacToeBoard Board { get; set; }
+    [Parameter]
+    public IEnumerable<int> Path { get; set; }
+    [Parameter]
+    public Action<IEnumerable<int>> ClickCell { get; set; }
+    private const int CellWidth = 30;
+    private const int CellHeight = 30;
+}

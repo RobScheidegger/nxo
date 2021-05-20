@@ -20,8 +20,7 @@ namespace NXO.Server.Dependencies
 
         public async Task<bool> Exists(string Key)
         {
-
-            return Key == null ? false : repository.ContainsKey(Key);
+            return Key != null && repository.ContainsKey(Key);
         }
 
         public async Task<T> Find(string Key)

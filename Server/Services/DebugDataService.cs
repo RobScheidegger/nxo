@@ -57,7 +57,7 @@ namespace NXO.Server.Services
             var settings = new TicTacToeSettings()
             {
                 BoardSize = 4,
-                Dimensions = 2,
+                Dimensions = 4,
                 LobbyCode = testGame.LobbyCode
             };
             await tictactoe.SaveSettingsAsync(settings);

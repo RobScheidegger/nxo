@@ -2,33 +2,27 @@
 @inject HttpClient Http
 @using System.Timers;
 
-<h3>Tic Tac Toe</h3>
-<div class="row">
-    <div class="col-lg-2">
-
-    </div>
-    <div class="col-lg-8">
-        <div class="board">
-            @if(GameState != null)
-            {
-                @foreach(var playerMove in GameState.PlayerMoves)
-                {
-                    <div>
-                        @playerMove.Key
-                    </div>
-                    <div>
-
-                    </div>
-                }
-            }
-            else
-            {
-                <div>Loading...</div>
-            }
+<div class="container">
+    <h3>Tic Tac Toe</h3>
+    <div class="row">
+        <div class="col-lg-2">
+            @Movetext
         </div>
-    </div>
-    <div class="col-lg-2">
+        <div class="col-lg-8">
+            <div class="board">
+                @if (GameState != null)
+                { 
+                    <TicTacToeGameBoardComponent Board="@GameState.Board" Path="Enumerable.Empty<int>()" ClickCell="ClickCell"></TicTacToeGameBoardComponent>
+                }
+                else
+                {
+                    <div>Loading...</div>
+                }
+            </div>
+        </div>
+        <div class="col-lg-2">
 
+        </div>
     </div>
 </div>
 
@@ -37,19 +31,19 @@
     public string LobbyCode { get; set; }
     [Parameter]
     public string PlayerId { get; set; }
+    public string Movetext { get; set; }
 
     public TicTacToeGameStatus GameState { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var status = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+        GameState = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+        Console.Write(GameState);
         await base.OnInitializedAsync();
     }
-    private Array ConstructArray()
+    private async void ClickCell(IEnumerable<int> Path)
     {
-        var board = Array.CreateInstance(typeof(int), new int[] { 1, 2, 3, 4, 5 });
-        var value = (int)board.GetValue(new int[] { 1, 4 });
-        
-        return board;
+        Movetext = "Clicked " + string.Join(',', Path.Select(i => i.ToString()));
+        StateHasChanged();
     }
 }

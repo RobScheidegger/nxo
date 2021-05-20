@@ -12,6 +12,7 @@ using NXO.Shared.Models;
 using NXO.Shared.Modules;
 using NXO.Shared.Repository;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 namespace NXO.Server
 {
@@ -29,7 +30,7 @@ namespace NXO.Server
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddRazorPages();
 
             //Shared Services
@@ -66,6 +67,7 @@ namespace NXO.Server
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
 
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
