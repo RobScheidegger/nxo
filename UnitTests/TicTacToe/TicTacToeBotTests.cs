@@ -18,7 +18,7 @@ namespace NXO.UnitTests.TicTacToe
         }
 
         [Fact]
-        public async void Bot_3x3_ForcedMove()
+        public async void Bot_3x3_ForcedMove_Vertical()
         {
             //Arrange
             var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]

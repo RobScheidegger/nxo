@@ -11,5 +11,6 @@ namespace NXO.Shared.Modules
         public int Dimensions { get; set; }
         public string LobbyCode { get; set; }
         public int MaximumPlayers { get; set; }
+        public IEnumerable<TicTacToePlayer> Players { get; set; }
     }
 }
