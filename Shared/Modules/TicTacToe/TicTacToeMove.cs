@@ -9,7 +9,6 @@ namespace NXO.Shared.Modules
     {
         public string PlayerId { get; set; }
         public string LobbyCode { get; set; }
-        public int XPosition { get; set; }
-        public int YPosition { get; set; }
+        public IEnumerable<int> Path { get; set; }
     }
 }

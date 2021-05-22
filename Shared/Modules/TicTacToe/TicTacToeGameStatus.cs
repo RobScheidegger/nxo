@@ -16,7 +16,7 @@ namespace NXO.Shared.Modules
 
      }
     public class TicTacToeBoard
-    { 
+    {
         public static TicTacToeBoard Construct(int Dimensions, int BoardSize, int? Position = null)
         {
             if (Dimensions >= 0)

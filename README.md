@@ -1,5 +1,7 @@
 ## What is NXO?
 
+NXO refers to 'n-dimensional Tic-Tac-Toe', an extension of traditional tic tac toe 
+
 ### Game Description
 
 ## The Team
