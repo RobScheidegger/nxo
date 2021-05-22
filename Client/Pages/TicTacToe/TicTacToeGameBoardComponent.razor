@@ -7,7 +7,7 @@
                 @foreach (var board in Board.Boards)
                 {
                 <tr>
-                    <td class="border"><TicTacToeGameBoardComponent Board="board" Path="Path.Append(board.Position.Value)" ClickCell="ClickCell"/></td>
+                    <td class="border"><TicTacToeGameBoardComponent Board="board" Path="Path.Append(board.Position)" ClickCell="ClickCell"/></td>
                 </tr>
                    
                 }
@@ -25,7 +25,7 @@
                         @foreach (var subBoard in board.Boards)
                         {
                             var css = subBoard.Dimension == 0 ? $"display: inline-block; width: {CellWidth}px; height: {CellHeight}px;" : "";
-                            <td class="border m-0" style="@css"><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position.Value).Append(subBoard.Position.Value)" ClickCell="ClickCell"/></td>
+                            <td class="border m-0" style="@css"><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position).Append(subBoard.Position)" ClickCell="ClickCell"/></td>
                         }
                     </tr>
                 }

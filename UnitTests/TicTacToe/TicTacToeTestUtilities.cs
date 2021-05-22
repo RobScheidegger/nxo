@@ -9,6 +9,7 @@ namespace NXO.UnitTests.TicTacToe
 {
     public static class TicTacToeTestUtilities
     {
+
         /// <summary>
         /// Constructor used as a testing utility for instantiating a board.
         /// </summary>

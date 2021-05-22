@@ -19,9 +19,9 @@ namespace NXO.Shared.Modules
     {
         public IEnumerable<TicTacToeBoard> Boards { get; set; }
         public bool Endpoint { get; set; } = false;
-        public char? Cell { get; set; } 
+        public char? Cell { get; set; }
         public int Dimension { get; set; }
-        public int? Position { get; set; }
+        public int Position { get; set; }
         public static TicTacToeBoard Construct(int Dimensions, int BoardSize, int? Position = null)
         {
             if (Dimensions >= 0)
@@ -31,12 +31,12 @@ namespace NXO.Shared.Modules
                     Boards = Dimensions == 0 ? null : Enumerable.Range(0, BoardSize).Select(i => Construct(Dimensions - 1, BoardSize, i)).ToList(),
                     Endpoint = Dimensions == 0,
                     Dimension = Dimensions,
-                    Position = Position
+                    Position = Position??0
                 };
                 return board;
             }
             else
                 return null;
         }
-    
+    }
 }
