@@ -93,6 +93,7 @@ namespace NXO.Server.Modules
             var gameStatus = new TicTacToeGameStatus()
             {
                 CurrentPlayerId = startingPlayer.Id,
+                CurrentPlayerName = startingPlayer.Nickname,
                 Board = TicTacToeBoard.Construct(gameSettings.Dimensions, gameSettings.BoardSize)
             };
 

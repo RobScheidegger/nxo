@@ -13,10 +13,15 @@ namespace NXO.Shared.Modules
         /// </summary>
         public TicTacToeBoard Board { get; set; }
         public string CurrentPlayerId { get; set; }
-
+        public string CurrentPlayerName { get; set; }
      }
     public class TicTacToeBoard
     {
+        public IEnumerable<TicTacToeBoard> Boards { get; set; }
+        public bool Endpoint { get; set; } = false;
+        public char? Cell { get; set; } 
+        public int Dimension { get; set; }
+        public int? Position { get; set; }
         public static TicTacToeBoard Construct(int Dimensions, int BoardSize, int? Position = null)
         {
             if (Dimensions >= 0)
@@ -33,11 +38,5 @@ namespace NXO.Shared.Modules
             else
                 return null;
         }
-        public IEnumerable<TicTacToeBoard> Boards { get; set; }
-        public bool Endpoint { get; set; } = false;
-        public char? Cell { get; set; } 
-        public int Dimension { get; set; }
-        public int? Position { get; set; }
-    }
-
+    
 }
