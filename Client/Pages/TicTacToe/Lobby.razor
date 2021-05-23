@@ -50,6 +50,7 @@
                             <tr>
                                 <th>Id</th>
                                 <th>Nickname</th>
+                                <th>Type</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -60,8 +61,14 @@
                                     <tr>
                                         <td>@player.Id</td>
                                         <td>@player.Nickname</td>
+                                        <td>
+                                            <select class="form-control">
+                                                <option>Human</option>
+                                                <option>AI</option>
+                                                <option>None</option>
+                                            </select>
+                                        </td>
                                     </tr>
-
                                 }
                             }
                             else

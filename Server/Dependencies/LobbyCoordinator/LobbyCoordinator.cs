@@ -53,6 +53,12 @@ namespace NXO.Server.Dependencies
 
         public async Task<CreateLobbyResult> CreateLobbyAsync(CreateLobbyRequest request)
         {
+            if (string.IsNullOrEmpty(request.Nickname))
+                return new CreateLobbyResult()
+                {
+                    Message = "Player nickname cannot be empty",
+                    Success = false
+                };
             var player = new Player()
             {
                 Id = guid.New(),
@@ -77,7 +83,7 @@ namespace NXO.Server.Dependencies
                 HostPlayerId = player.Id
             };
             await gameRepository.Add(game.LobbyCode, game);
-            //Configure the game-specific portion using the 
+            //Configure the game-specific portion using the corresponding Module Manager
             await modules[request.GameType].CreateLobbyAsync(game);
             return new CreateLobbyResult()
             {

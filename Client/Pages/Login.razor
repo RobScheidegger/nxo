@@ -94,6 +94,11 @@
         {
             navigation.NavigateTo($"{LobbyType}/lobby/{result.LobbyCode}/{result.PlayerId}");
         }
+        else
+        {
+            ErrorMessage = result.Message;
+            StateHasChanged();
+        }
     }
 
     private async Task ClickJoinButton()
@@ -111,7 +116,7 @@
         else
         {
             ErrorMessage = result.RejectMessage;
+            StateHasChanged();
         }
-
     }
 }
