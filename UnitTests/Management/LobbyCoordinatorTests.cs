@@ -5,6 +5,7 @@ using NXO.Server.Dependencies;
 using NXO.Shared.Models;
 using System.Threading.Tasks;
 using NXO.Shared.Repository;
+using System.Collections.Generic;
 
 namespace NXO.UnitTests.Management
 { 
@@ -13,9 +14,12 @@ namespace NXO.UnitTests.Management
         internal LobbyCoordinator manager { get; set; }
         Mock<IRepository<Game>> gameMock = new Mock<IRepository<Game>>();
         Mock<IGuidProvider> guidMock = new Mock<IGuidProvider>();
+        Mock<IModuleManager> moduleManagerMock_1 = new Mock<IModuleManager>();
         public LobbyCoordinatorTests()
         {
-            manager = new LobbyCoordinator(gameMock.Object, guidMock.Object, null);
+            //Set this here because it is used in the constructor
+            moduleManagerMock_1.Setup(i => i.GameType).Returns("tictactoe");
+            manager = new LobbyCoordinator(gameMock.Object, guidMock.Object, new IModuleManager[] { moduleManagerMock_1.Object });
         }
         [Fact]
         public async Task AttemptJoin_LobbyCodeNull()
@@ -87,7 +91,29 @@ namespace NXO.UnitTests.Management
         public async Task AttemptJoin_LobbyExists_NicknameNotEmpty()
         {
             //Arrange
-            var code = "MORETEST";
+            const string code = "MORETEST";
+            gameMock.Setup(i => i.Exists(code)).ReturnsAsync(true);
+            gameMock.Setup(i => i.Find(code)).ReturnsAsync(new Game()
+            {
+                LobbyCode = code,
+                Stage = "Lobby",
+                GameType = "tictactoe",
+                Nickname = "Some Nickname",
+                Players = new List<Player>()
+                {
+                    new Player()
+                    {
+                        Id = "player1",
+                        Nickname = "Player 1"
+                    }
+                },
+                Settings = new GameSettings()
+                {
+                    MaximumPlayers = 2,
+                    MinimumPlayers = 1
+                }
+            });
+           
             var input = new JoinRequest()
             {
                 GameCode = code,

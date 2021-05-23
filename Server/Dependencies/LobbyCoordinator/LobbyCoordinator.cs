@@ -112,7 +112,7 @@ namespace NXO.Server.Dependencies
 
         public async Task<bool> LobbyExistsAsync(string LobbyCode)
         {
-            return await gameRepository.Exists(LobbyCode);
+            return LobbyCode != null && await gameRepository.Exists(LobbyCode);
         }
 
         public async Task<bool> SpotAvailableAsync(string LobbyCode)
