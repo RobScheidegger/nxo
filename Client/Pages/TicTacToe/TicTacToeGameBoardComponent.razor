@@ -1,4 +1,4 @@
-﻿@if (Board != null)    
+﻿@if (Board != null)
 {
     if (Board.Dimension % 2 == 1)
     {
@@ -6,31 +6,32 @@
             <table class="table m-0">
                 @foreach (var board in Board.Boards)
                 {
-                <tr>
-                    <td class="border"><TicTacToeGameBoardComponent Board="board" Path="Path.Append(board.Position)" ClickCell="ClickCell"/></td>
-                </tr>
-                   
+                    <tr>
+                        <td class="border"><TicTacToeGameBoardComponent Board="board" Path="Path.Append(board.Position)" ClickCell="ClickCell" /></td>
+                    </tr>
+
                 }
             </table>
         </div>
     }
     else if (Board.Dimension >= 2)
     {
-        <div class="p-2">
-            <table class="table m-0" style="table-layout: fixed;">
+        
+        <div class="board-container">
+            <table class="table">
                 @foreach (var board in Board.Boards)
                 {
-                    var trStyle = board.Dimension == 1 ? $"width: {(board.Boards.Count() + 1) * CellWidth}px;" : "";
-                    <tr style="@trStyle display: block">
+                    <tr>
                         @foreach (var subBoard in board.Boards)
                         {
                             var css = subBoard.Dimension == 0 ? $"display: inline-block; width: {CellWidth}px; height: {CellHeight}px;" : "";
-                            <td class="border m-0" style="@css"><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position).Append(subBoard.Position)" ClickCell="ClickCell"/></td>
+                            <td class="border" style="@css"><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position).Append(subBoard.Position)" ClickCell="ClickCell"/></td>
                         }
                     </tr>
                 }
             </table>
         </div>
+
     }
     else //0
     {

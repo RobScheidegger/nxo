@@ -2,30 +2,29 @@
 @inject HttpClient Http
 @using System.Timers;
 
-<div class="container">
+<div id="game">
     <h3>Tic Tac Toe </h3>
-    @if(GameState != null)
-    {
-        <h4>@GameState.CurrentPlayerName's Turn</h4>
-    }
-    <div class="row">
-        <div class="col-lg-2">
-            @Movetext
-        </div>
-        <div class="col-lg-8">
-            <div class="board">
-                @if (GameState != null)
-                { 
-                    <TicTacToeGameBoardComponent Board="@GameState.Board" Path="Enumerable.Empty<int>()" ClickCell="ClickCell"></TicTacToeGameBoardComponent>
-                }
-                else
-                {
-                    <div>Loading...</div>
-                }
-            </div>
-        </div>
-        <div class="col-lg-2">
 
+    <div class="game-container">
+        <div class="border" id="board">
+            @if (GameState != null)
+            { 
+                <TicTacToeGameBoardComponent Board="@GameState.Board" Path="Enumerable.Empty<int>()" ClickCell="ClickCell"></TicTacToeGameBoardComponent>
+            }
+            else
+            {
+                <div>Loading...</div>
+            }
+        </div>
+
+        <div id="infobox">
+            <div class="border">
+                @if (GameState != null)
+                {
+                    <h4>@GameState.CurrentPlayerName's Turn</h4>
+                }
+                @Movetext
+            </div>
         </div>
     </div>
 </div>

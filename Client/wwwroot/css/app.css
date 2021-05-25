@@ -1,7 +1,7 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 a, .btn-link {
@@ -181,3 +181,155 @@ app {
         display: block;
     }
 }
+
+/* Erik Custom CSS below */
+
+app {
+    flex-direction: column;
+    flex: 100%;
+}
+
+body {
+    background-color: hsl(235, 20%, 98%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    min-width: -moz-fit-content;
+    min-width: fit-content;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    font-size: 2rem;
+    width: 100%;
+    background-color: hsl(235, 20%, 30%);
+}
+
+    .header > * {
+        display: flex;
+        align-items: center;
+    }
+
+    .header #title {
+        font-weight: bold;
+    }
+
+    .header a {
+        display: flex;
+        align-items: center;
+        color: white;
+        text-decoration: none;
+        padding: 1rem 2rem;
+        height: 100%;
+    }
+
+        .header a:hover {
+            color: white;
+        }
+
+    .header .topnav {
+        margin: 0rem 2rem;
+        font-size: 1.25rem;
+    }
+
+        .header .topnav a {
+            margin: 0rem;
+        }
+
+            .header .topnav a:hover {
+                margin: 0rem;
+                background-color: hsl(235, 20%, 40%);
+            }
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    background-color: hsl(235, 20%, 100%);
+    flex: 100%;
+    margin: 2rem;
+    padding: 2rem;
+    border: 1px solid hsl(235, 20%, 90%);
+    border-radius: 6px;
+    min-width: -moz-fit-content;
+    min-width: fit-content;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    background-color: hsl(235, 20%, 95%);
+    color: hsl(235, 20%, 60%);
+    font-size: 0.8rem;
+    border-top: 1px solid hsl(235, 20%, 85%);
+}
+
+    .footer div {
+        display: flex;
+        align-items: center;
+    }
+
+    .footer p {
+        margin: 0.5rem 2rem;
+    }
+
+#game {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 100%;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: row;
+    flex: 100%;
+}
+
+
+
+#board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 70%;
+    background-color: hsl(235, 20%, 96%);
+}
+
+    #board * {
+        
+    }
+
+    #board .board-container {
+        margin: 0.25rem;
+        padding: 0rem;
+    }
+
+    #board tr {
+        display: flex;
+    }
+
+    #board td {
+        background-color: hsl(235, 20%, 100%);
+        margin: 2px;
+    }
+
+    #board table {
+        margin: 0px;
+    }
+
+    #board a:hover {
+        background-color: hsl(235, 20%, 97.5%);
+        cursor: pointer;
+    }
+
+#infobox {
+    flex: 30%;
+    padding-left: 0.5rem;
+    min-width: 14rem;
+}
+
+    #infobox div {
+        height: 100%;
+    }

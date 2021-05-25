@@ -8,10 +8,37 @@
     <base href="/" />
     <link href="dist/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <app>Loading...</app>
+
+    <div class="header">
+        <div id="title">
+            <a href="/">NXOProject</a>
+        </div>
+        <nav class="topnav">
+            <a href="/">Home</a>
+            <a href="tictactoe/test/player1">Test1</a>
+            <a href="tictactoe/test2/player1">Test2</a>
+        </nav>
+    </div>
+
+    <div class="app-container">
+        <app>Loading...</app>
+    </div>
+
+    <div class="footer">
+        <div class="copyright">
+            <p>© 2021 NXOProject. All rights reserved.</p>
+        </div>
+        <div class="contact">
+            <p>Contact the devs at: nxoproject [at] gmail [dot] com</p>
+        </div>
+    </div>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
