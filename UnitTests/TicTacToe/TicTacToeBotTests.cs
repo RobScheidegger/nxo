@@ -24,18 +24,40 @@ namespace NXO.UnitTests.TicTacToe
             var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
             {
                 {'x', null, null},
-                {null, 'o', null},
-                {null, 'o', null }
+                {null, null, 'o'},
+                {null, null, 'o' }
             });
             var gameStatus = new TicTacToeGameStatus()
             {
                 Board = board,
-                CurrentPlayerId = "idk"
+                CurrentPlayerId = "bot"
+            };
+            var gameSettings = new TicTacToeSettings()
+            {
+                BoardSize = 3,
+                Dimensions = 2,
+                LobbyCode = "test",
+                MaximumPlayers = 2,
+                Players = new List<TicTacToePlayer>()
+                {
+                    new TicTacToePlayer()
+                    {
+                        PlayerId = "playerTest",
+                        Bot = false,
+                        Token = 'o'
+                    },
+                    new TicTacToePlayer()
+                    {
+                        PlayerId = "bot",
+                        Bot = true,
+                        Token = 'x'
+                    }
+                }
             };
             //Act
-            var move = await bot.GetNextMove('x', gameStatus);
+            var move = await bot.GetNextMove('x', gameStatus, gameSettings);
             //Assert
-            Assert.Equal(move.Path.ToArray(), new int[] { 0, 1 });
+            Assert.Equal(move.Path.ToArray(), new int[] { 0, 2 });
         }
 
         [Fact]
@@ -55,6 +77,22 @@ namespace NXO.UnitTests.TicTacToe
             Assert.Contains(x_paths, i => i[0] == 0 && i[1] == 0);
             Assert.Contains(o_paths, i => i[0] == 1 && i[1] == 1);
             Assert.Contains(o_paths, i => i[0] == 2 && i[1] == 1);
+        }
+
+        [Fact]
+        public void Bot_3x3_DetermineMinimaxScore()
+        {
+            //Arrange
+            var board = new char?[,]
+            {
+                {'x', 'o', null},
+                {null, 'o', 'x'},
+                {'x', 'o', null }
+            };
+            //Act
+            var score = bot.EvaluateWin(board);
+            //Assert
+            Assert.Equal(10,score);
         }
     }
 }
