@@ -14,7 +14,9 @@ namespace NXO.Server.Dependencies
 
         public string NewLobbyCode()
         {
-            return Guid.NewGuid().ToString().Substring(0, 6).ToUpper();
+            var startingGuid = Guid.NewGuid().ToString();
+            var alphabetic = string.Join("", startingGuid.Where(char.IsLetter));
+            return alphabetic.Substring(0, 6).ToUpper();
         }
     }
 }

@@ -127,7 +127,7 @@ namespace NXO.UnitTests.Management
             Assert.True(string.IsNullOrEmpty(result.RejectMessage));
         }
         [Fact]
-        public async Task CreateLobbyAsync_Success()
+        public async Task CreateLobbyAsync_NonEmptyNickname()
         {
             //Arrange
             
@@ -136,6 +136,26 @@ namespace NXO.UnitTests.Management
             //Assert
 
         }
-
+        [Fact]
+        public async Task CreateLobbyAsync_Rejects_EmptyNickname()
+        {
+            //Arrange
+            var request_empty = new CreateLobbyRequest()
+            {
+                GameType = "tictactoe",
+                Nickname = ""
+            };
+            var request_null = new CreateLobbyRequest()
+            {
+                GameType = "tictactoe",
+                Nickname = null
+            };
+            //Act
+            var result_null = await manager.CreateLobbyAsync(request_null);
+            var result_empty = await manager.CreateLobbyAsync(request_empty);
+            //Assert
+            Assert.False(result_null.Success);
+            Assert.False(result_empty.Success);
+        }
     }
 }
