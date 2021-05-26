@@ -87,7 +87,7 @@ namespace NXO.Server.Services
             {
                 BoardSize = 4,
                 Dimensions = 4,
-                LobbyCode = testGame.LobbyCode
+                LobbyCode = testGame.LobbyCode,
             };
             await tictactoe.SaveSettingsAsync(settings);
             await tictactoe.StartGame(testGame.LobbyCode);

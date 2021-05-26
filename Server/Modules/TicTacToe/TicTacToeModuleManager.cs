@@ -24,14 +24,29 @@ namespace NXO.Server.Modules
             this.gameStatusRepository = gameStatus;
         }
         public string GameType => "tictactoe";
-
+        private char[] Tokens = { 'x', 'o', 'q'};
+        private int TokenIndex = 0;
+        private char GetNextToken()
+        {
+            var token = Tokens[TokenIndex % Tokens.Length];
+            TokenIndex++;
+            return token;
+        }
         public async Task<bool> CreateLobbyAsync(Game game)
         {
             var setting = new TicTacToeSettings()
-            { 
+            {
                 BoardSize = 3,
                 Dimensions = 2,
-                MaximumPlayers = 2
+                MaximumPlayers = 2,
+                LobbyCode = game.LobbyCode,
+                Players = game.Players.Select(i => new TicTacToePlayer()
+                {
+                    Bot = false,
+                    Nickname = i.Nickname,
+                    Token = GetNextToken(),
+                    PlayerId = i.Id
+                })
             };
             await settingsRepository.Add(game.LobbyCode, setting);
             return true;
@@ -57,10 +72,44 @@ namespace NXO.Server.Modules
             return await settingsRepository.Find(LobbyCode);
         }
 
-        public Task<MoveResult> PerformMoveAsync(IGameMove move)
+        public async Task<MoveResult> PerformMoveAsync(IGameMove move)
         {
-            var properMove = move;
-            throw new NotImplementedException();
+            var properMove = move as TicTacToeMove;
+            var gameStatus = await gameStatusRepository.Find(move.LobbyCode);
+            var settings = await settingsRepository.Find(move.LobbyCode);
+            if(IsValidMove(properMove, gameStatus))
+            {
+                var playerToken = settings.Players.Where(i => i.PlayerId == move.PlayerId).First().Token;
+                var currentPlayerIndex = settings.Players.Select(i => i.PlayerId).ToList().IndexOf(gameStatus.CurrentPlayerId);
+                var currentPlayer = settings.Players.ElementAt(currentPlayerIndex);
+                var nextPlayerIndex = (currentPlayerIndex + 1) % settings.Players.Count();
+                var nextPlayer = settings.Players.ElementAt(nextPlayerIndex);
+                await gameStatusRepository.Update(move.LobbyCode, g =>
+                {
+                    g.Board.Place(playerToken, properMove.Path);
+                    g.CurrentPlayerId = nextPlayer.PlayerId;
+                    g.CurrentPlayerName = nextPlayer.Nickname;
+                });
+                return new MoveResult()
+                {
+                    Success = true,
+                    Message = $"{currentPlayer.Nickname} placed a '{currentPlayer.Token}' at '{string.Join(',', properMove.Path)}'"
+                };
+            }
+            else
+            {
+                return new MoveResult()
+                {
+                    Success = false,
+                    Message = "Move was not valid."
+                };
+            }
+        }
+
+        private static bool IsValidMove(TicTacToeMove properMove, TicTacToeGameStatus gameStatus)
+        {
+            return gameStatus.Board.GetForPosition(properMove.Path) == null
+                && properMove.PlayerId == gameStatus.CurrentPlayerId;
         }
 
         public async Task<SaveSettingsResult> SaveSettingsAsync(IGameSettings settings)
@@ -96,8 +145,6 @@ namespace NXO.Server.Modules
                 CurrentPlayerName = startingPlayer.Nickname,
                 Board = TicTacToeBoard.Construct(gameSettings.Dimensions, gameSettings.BoardSize)
             };
-
-            gameStatus.Board.Boards.Append(null);
 
             await gameStatusRepository.Add(LobbyCode, gameStatus);
         }

@@ -27,7 +27,6 @@ namespace NXO.UnitTests.TicTacToe
                     {
                         Cell = array[i,j],
                         Dimension = 0,
-                        Endpoint = true,
                         Position = j
                     });
                 }
@@ -35,13 +34,11 @@ namespace NXO.UnitTests.TicTacToe
                 {
                     Boards = endBoards,
                     Dimension = 1,
-                    Endpoint = false,
                     Position = i
                 });
             }
             return new TicTacToeBoard()
             {
-                Endpoint = false,
                 Boards = boards,
                 Position = 0,
                 Dimension = 2

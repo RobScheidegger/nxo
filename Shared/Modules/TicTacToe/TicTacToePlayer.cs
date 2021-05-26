@@ -14,5 +14,9 @@
         /// The playing token that the player wants to play with.
         /// </summary>
         public char Token { get; set; }
+        /// <summary>
+        /// The nickname of the given player.
+        /// </summary>
+        public string Nickname { get; set; }
     }
 }

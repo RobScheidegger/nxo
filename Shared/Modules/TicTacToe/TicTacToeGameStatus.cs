@@ -14,11 +14,11 @@ namespace NXO.Shared.Modules
         public TicTacToeBoard Board { get; set; }
         public string CurrentPlayerId { get; set; }
         public string CurrentPlayerName { get; set; }
-     }
+    }
     public class TicTacToeBoard
     {
         public IEnumerable<TicTacToeBoard> Boards { get; set; }
-        public bool Endpoint { get; set; } = false;
+        public bool Endpoint { get { return Dimension == 0;  } }
         public char? Cell { get; set; }
         public int Dimension { get; set; }
         public int Position { get; set; }
@@ -29,7 +29,6 @@ namespace NXO.Shared.Modules
                 var board = new TicTacToeBoard()
                 {
                     Boards = Dimensions == 0 ? null : Enumerable.Range(0, BoardSize).Select(i => Construct(Dimensions - 1, BoardSize, i)).ToList(),
-                    Endpoint = Dimensions == 0,
                     Dimension = Dimensions,
                     Position = Position??0
                 };
@@ -37,6 +36,28 @@ namespace NXO.Shared.Modules
             }
             else
                 return null;
+        }
+        public char? GetForPosition(IEnumerable<int> Path)
+        {
+            if(Path.Count() == 0)
+            {
+                return Cell;
+            }
+            else
+            {
+                return Boards.ElementAt(Path.First()).GetForPosition(Path.Skip(1));
+            }
+        }
+        public void Place(char playerToken, IEnumerable<int> Path)
+        {
+            if(Path.Count() == 0)
+            {
+                Cell = playerToken;
+            }
+            else
+            {
+                Boards.ElementAt(Path.First()).Place(playerToken, Path.Skip(1));
+            }
         }
     }
 }
