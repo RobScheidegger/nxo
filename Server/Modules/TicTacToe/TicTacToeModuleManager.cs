@@ -161,14 +161,12 @@ namespace NXO.Server.Modules
             var playerMovesHash = new HashSet<int[]>(playerMoves);
             var boardSize = board.Boards.Count();
 
-            return playerEdgeMoves.Any(move =>
-            {
-                vectors.Any(vector =>
+            return playerEdgeMoves.Any(move => vectors.Any(vector =>
                 {
                     var moveCheck = Enumerable.Range(0, boardSize).Select(n => Add(move, Multiply(n, vector)));
 
-                });
-            });
+                    return moveCheck.All(playerMovesHash.Contains);
+                }));
 
             int[] Add(int[] firstArray, int[] secondArray)
             {
