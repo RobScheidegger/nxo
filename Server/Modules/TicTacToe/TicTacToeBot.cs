@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace NXO.Server.Modules.TicTacToe
 {
-    public class TicTicToeBot
+    public class TicTacToeBot
     {
         private readonly TicTacToeGameLogicHandler logic;
-        public TicTicToeBot(TicTacToeGameLogicHandler logic)
+        public TicTacToeBot(TicTacToeGameLogicHandler logic)
         {
             this.logic = logic;
         }

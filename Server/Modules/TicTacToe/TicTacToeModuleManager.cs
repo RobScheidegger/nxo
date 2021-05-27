@@ -17,10 +17,10 @@ namespace NXO.Server.Modules
         private readonly IRepository<TicTacToeSettings> settingsRepository;
         private readonly IRepository<TicTacToeGameStatus> gameStatusRepository;
         private readonly IRepository<Game> gameRepository;
-        private readonly TicTicToeBot bot;
+        private readonly TicTacToeBot bot;
         private readonly TicTacToeGameLogicHandler logic;
         public TicTacToeModuleManager(IGuidProvider guid, IRepository<TicTacToeSettings> settings, IRepository<Game> gameRepository, 
-            IRepository<TicTacToeGameStatus> gameStatus, TicTacToeGameLogicHandler logic, TicTicToeBot bot)
+            IRepository<TicTacToeGameStatus> gameStatus, TicTacToeGameLogicHandler logic, TicTacToeBot bot)
         {
             this.guid = guid;
             this.settingsRepository = settings;
