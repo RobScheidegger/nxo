@@ -34,7 +34,6 @@ namespace NXO.Server
             services.AddRazorPages();
 
             //Shared Services
-            services.AddSingleton<IRepository<Game>, InMemoryRepository<Game>>();
             services.AddSingleton<ILobbyCoordinator, LobbyCoordinator>();
             services.AddSingleton<IGuidProvider, GuidProvider>();
             

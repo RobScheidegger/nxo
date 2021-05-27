@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NXO.Server.Modules
 {
-    public class TicTacToeController : BaseGameController<TicTacToeSettings, TicTacToeGameStatus, TicTacToeMove>
+    public class TicTacToeController : BaseGameController<TicTacToeGameStatus, TicTacToeMove>
     {
         public override string GameType => "tictactoe";
         public TicTacToeController(IEnumerable<IModuleManager> modules) : base(modules)

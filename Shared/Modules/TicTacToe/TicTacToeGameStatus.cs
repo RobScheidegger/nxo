@@ -16,6 +16,20 @@ namespace NXO.Shared.Modules
         public string CurrentPlayerName { get; set; }
         public TicTacToePlayer Winner { get; set; }
         public bool Completed { get; set; }
+        public int BoardSize { get; set; }
+        public int Dimensions { get; set; }
+        public string LobbyCode { get; set; }
+        public int MaximumPlayers { get; set; }
+        public IEnumerable<TicTacToePlayer> Players { get; set; }
+        public DateTime DateCreated { get; set; }
+        public string GameType { get; set; }
+        public string Stage { get; set; }
+        public string Nickname { get; set; }
+        public string HostPlayerId { get; set; }
+
+        public int PlayerCount { get {
+                return Players?.Count()??0;
+            } }
     }
     public class TicTacToeBoard
     {

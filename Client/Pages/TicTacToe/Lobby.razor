@@ -16,21 +16,21 @@
                 </div>
                 <div class="card-body">
                     <div>Code: @Status?.LobbyCode</div>
-                    @if (Settings != null && Status?.HostPlayerId == PlayerId)
+                    @if (Status != null && Status?.HostPlayerId == PlayerId)
                     {
                         <h4>Game Settings</h4>
                         <div class="form-group">
                             <label class="control-label">Maximum Players</label>
-                            <input class="form-control" @bind-value="@Settings.MaximumPlayers" type="number" />
+                            <input class="form-control" @bind-value="@Status.MaximumPlayers" type="number" />
                         </div>
                         <h4>Game Configuration</h4>
                         <div class="form-group">
                             <label class="control-label">Dimensions</label>
-                            <input class="form-control" @bind-value="@Settings.Dimensions" type="number" />
+                            <input class="form-control" @bind-value="@Status.Dimensions" type="number" />
                         </div>
                         <div class="form-group">
                             <label class="control-label">Board Size</label>
-                            <input class="form-control" @bind-value="@Settings.BoardSize" type="number" />
+                            <input class="form-control" @bind-value="@Status.BoardSize" type="number" />
                         </div>
                         <div class="form-group mt-2">
                             <a class="btn btn-primary" @onclick="ClickSaveSettings">Save Settings</a>
@@ -59,15 +59,9 @@
                                 @foreach (var player in Status.Players.Where(i => i != null))
                                 {
                                     <tr>
-                                        <td>@player.Id</td>
+                                        <td>@player.PlayerId</td>
                                         <td>@player.Nickname</td>
-                                        <td>
-                                            <select class="form-control">
-                                                <option>Human</option>
-                                                <option>AI</option>
-                                                <option>None</option>
-                                            </select>
-                                        </td>
+                                        <td>@(player.Bot ? "Bot" : "Human")</td>
                                     </tr>
                                 }
                             }
@@ -94,8 +88,7 @@
     public string LobbyCode { get; set; }
     [Parameter]
     public string PlayerId { get; set; }
-    public Game Status { get; set; }
-    public TicTacToeSettings Settings { get; set; }
+    public TicTacToeGameStatus Status { get; set; }
     public string Message { get; set; }
     public string MessageType { get; set; }
     private const int TimerInterval = 1000;
@@ -112,13 +105,7 @@
     {
         try
         {
-            var request = new LobbyStatusRequest()
-            {
-                LobbyCode = LobbyCode
-            };
-            var result = await Http.PostFromJsonAsync<LobbyStatusRequest, LobbyStatusResult<TicTacToeSettings>>("TicTacToe/LobbyStatus", request);
-            Status = result.Game;
-            Settings = result.Settings;
+            Status = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GameStatus?LobbyCode={LobbyCode}", LobbyCode);
             StateHasChanged();
         }
         catch (Exception err)
@@ -128,8 +115,7 @@
     }
     private async Task ClickSaveSettings()
     {
-        Settings.LobbyCode = LobbyCode;
-        var result = await Http.PostFromJsonAsync<TicTacToeSettings, SaveSettingsResult>("TicTacToe/SaveSettings", Settings);
+        var result = await Http.PostFromJsonAsync<TicTacToeGameStatus, SaveSettingsResult>("TicTacToe/SaveSettings", Status);
         Message = result.Message;
         MessageType = result.Success ? "success" : "danger";
     }

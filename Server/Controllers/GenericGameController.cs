@@ -11,8 +11,7 @@ namespace NXO.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class BaseGameController<SettingsClass, GameStatusClass, MoveClass> : Controller 
-        where SettingsClass : class, IGameSettings 
+    public class BaseGameController<GameStatusClass, MoveClass> : Controller 
         where GameStatusClass : class, IGameStatus
         where MoveClass : class, IGameMove
     {
@@ -23,7 +22,7 @@ namespace NXO.Server.Controllers
             manager = modules.FirstOrDefault(i => i.GameType == GameType);
         }
         [HttpPost("SaveSettings")]
-        public async Task<SaveSettingsResult> SaveSettings(SettingsClass settings)
+        public async Task<SaveSettingsResult> SaveSettings(GameStatusClass settings)
         {
             return await manager.SaveSettingsAsync(settings);
         }
@@ -36,11 +35,6 @@ namespace NXO.Server.Controllers
         public async Task<GameStatusClass> GetGameStatus(string LobbyCode)
         {
             return await manager.GetGameStateAsync(LobbyCode) as GameStatusClass;
-        }
-        [HttpPost("LobbyStatus")]
-        public async Task<LobbyStatusResult<SettingsClass>> Status(LobbyStatusRequest request)
-        {
-            return await manager.GetLobbyStatus<SettingsClass>(request);
         }
     }
 }

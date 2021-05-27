@@ -111,7 +111,7 @@
         var result = await Http.PostFromJsonAsync<JoinRequest, JoinResult>("Lobby/Join", request);
         if(result.Success)
         {
-            navigation.NavigateTo($"{LobbyType}/lobby/{GameCode}/{result.Player.Id}");
+            navigation.NavigateTo($"{LobbyType}/lobby/{GameCode}/{result.PlayerId}");
         }
         else
         {

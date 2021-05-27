@@ -13,7 +13,6 @@ namespace NXO.Server.Dependencies
         /// </summary>
         /// <param name="request"></param>
         /// <returns>The result of the </returns>
-        Task<JoinResult> JoinAsync(JoinRequest request);
         Task<JoinResult> AttemptJoinAsync(JoinRequest request);
         Task<CreateLobbyResult> CreateLobbyAsync(CreateLobbyRequest request);
     }

@@ -14,18 +14,18 @@ namespace NXO.Server.Services
 {
     public class DebugDataService : IHostedService
     {
-        private readonly IRepository<Game> games;
+        private readonly IRepository<TicTacToeGameStatus> tictactoeGames;
         private readonly Dictionary<string, IModuleManager> modules;
-        public DebugDataService(IRepository<Game> games, IEnumerable<IModuleManager> managers)
+        public DebugDataService(IRepository<TicTacToeGameStatus> games, IEnumerable<IModuleManager> managers)
         {
-            this.games = games;
+            this.tictactoeGames = games;
             modules = managers.ToDictionary(i => i.GameType, i => i);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             var tictactoe = modules["tictactoe"];
-            var testGame = new Game()
+            var testGame = new TicTacToeGameStatus()
             {
                 LobbyCode = "test",
                 DateCreated = DateTime.Now,
@@ -33,27 +33,29 @@ namespace NXO.Server.Services
                 HostPlayerId = "player1",
                 Nickname = "Test Game",
                 Stage = "In Game",
-                Settings = new GameSettings()
+                MaximumPlayers = 2,
+                Players = new List<TicTacToePlayer>()
                 {
-                    MaximumPlayers = 2,
-                    MinimumPlayers = 2
-                },
-                Players = new Player[]
-                {
-                    new Player()
+                    new TicTacToePlayer()
                     {
-                        Id = "player1",
-                        Nickname = "Test Player 1"
+                        PlayerId = "player1",
+                        Nickname = "Test Player 1",
+                        Token = 'x'
                     },
-                    new Player()
+                    new TicTacToePlayer()
                     {
-                        Id = "player2",
-                        Nickname = "Test Player 2"
+                        PlayerId = "player2",
+                        Nickname = "Test Player 2",
+                        Token = 'o'
                     }
-                }
+                },
+                BoardSize = 4,
+                Dimensions = 4
             };
+            await tictactoeGames.Add(testGame.LobbyCode, testGame);
+            await tictactoe.StartGame(testGame.LobbyCode);
 
-            var testGame2 = new Game()
+            var testGame2 = new TicTacToeGameStatus()
             {
                 LobbyCode = "test2",
                 DateCreated = DateTime.Now,
@@ -61,46 +63,28 @@ namespace NXO.Server.Services
                 HostPlayerId = "player1",
                 Nickname = "Test Game",
                 Stage = "In Game",
-                Settings = new GameSettings()
+                MaximumPlayers = 2,
+                
+                Players = new List<TicTacToePlayer>()
                 {
-                    MaximumPlayers = 2,
-                    MinimumPlayers = 2
-                },
-                Players = new Player[]
-                {
-                    new Player()
+                    new TicTacToePlayer()
                     {
-                        Id = "player1",
-                        Nickname = "Test Player 1"
+                        PlayerId = "player1",
+                        Nickname = "Test Player 1",
+                        Token = 'x'
                     },
-                    new Player()
+                    new TicTacToePlayer()
                     {
-                        Id = "player2",
-                        Nickname = "Test Player 2"
+                        PlayerId = "player2",
+                        Nickname = "Test Player 2",
+                        Token = 'o'
                     }
-                }
-            };
-
-            await games.Add(testGame.LobbyCode, testGame);
-            await tictactoe.CreateLobbyAsync(testGame);
-            var settings = new TicTacToeSettings()
-            {
-                BoardSize = 4,
-                Dimensions = 4,
-                LobbyCode = testGame.LobbyCode,
-            };
-            await tictactoe.SaveSettingsAsync(settings);
-            await tictactoe.StartGame(testGame.LobbyCode);
-
-            await games.Add(testGame2.LobbyCode, testGame2);
-            await tictactoe.CreateLobbyAsync(testGame2);
-            var settings2 = new TicTacToeSettings()
-            {
+                },
                 BoardSize = 3,
-                Dimensions = 3,
-                LobbyCode = testGame2.LobbyCode
+                Dimensions = 3
             };
-            await tictactoe.SaveSettingsAsync(settings2);
+            
+            await tictactoeGames.Add(testGame2.LobbyCode, testGame2);
             await tictactoe.StartGame(testGame2.LobbyCode);
         }
 

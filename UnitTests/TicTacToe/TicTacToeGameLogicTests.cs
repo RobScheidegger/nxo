@@ -75,7 +75,7 @@ namespace NXO.UnitTests.TicTacToe
             Assert.False(x_wins);
         }
         [Fact]
-        public void Logic_3x3_WinDiagonal()
+        public void Logic_3x3_WinVertical()
         {
             //Arrange
             var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
@@ -95,11 +95,11 @@ namespace NXO.UnitTests.TicTacToe
         public void Logic_3x3x3_WinAcrossDimensions()
         {
             //Arrange
-            var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
+            var board = TicTacToeTestUtilities.Get3DBoard(new char?[,,]
             {
-                {'x', null, 'x'},
+                { {'x', null, 'x'},
                 {'x', 'o', 'o'},
-                {'x', 'x', null }
+                {'x', 'x', null } }
             });
             //Act
             var o_wins = logic.HasPlayerWon('o', board);

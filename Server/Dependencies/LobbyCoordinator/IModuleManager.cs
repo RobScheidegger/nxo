@@ -16,12 +16,13 @@ namespace NXO.Server.Dependencies
         /// </summary>
         /// <param name="request">The request for lobby creation.</param>
         /// <returns>The result indicating success and status.</returns>
-        Task<bool> CreateLobbyAsync(Game game);
+        Task<IGameStatus> CreateLobbyAsync(CreateLobbyRequest request);
         Task<MoveResult> PerformMoveAsync(IGameMove move);
-        Task<SaveSettingsResult> SaveSettingsAsync(IGameSettings settings);
+        Task<SaveSettingsResult> SaveSettingsAsync(IGameStatus settings);
         Task<IGameStatus> GetGameStateAsync(string LobbyCode);
-        Task<IGameSettings> GetSettings(string LobbyCode);
-        Task<LobbyStatusResult<T>> GetLobbyStatus<T>(LobbyStatusRequest request) where T : class, IGameSettings;
         Task StartGame(string LobbyCode);
+        Task<bool> HasLobbyStartedAsync(string LobbyCode);
+        Task<bool> SpotAvailableAsync(string LobbyCode);
+        Task<JoinResult> JoinAsync(JoinRequest request);
     }
 }

@@ -13,7 +13,7 @@ namespace NXO.Server.Modules.TicTacToe
         {
             this.logic = logic;
         }
-        public async Task<TicTacToeMove> GetNextMove(char MoveIdentifier, TicTacToeGameStatus GameStatus, TicTacToeSettings GameSettings)
+        public async Task<TicTacToeMove> GetNextMove(char MoveIdentifier, TicTacToeGameStatus GameStatus)
         {
             List<int> scores = new();
             List<List<int>> moves = new();
@@ -35,7 +35,7 @@ namespace NXO.Server.Modules.TicTacToe
             TicTacToeMove bestMove = new()
             {
                 PlayerId = GameStatus.CurrentPlayerId,
-                LobbyCode = GameSettings.LobbyCode,
+                LobbyCode = GameStatus.LobbyCode,
                 Path = moves[scores.IndexOf(scores.Max())]
             };
             return bestMove;
