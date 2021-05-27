@@ -19,7 +19,7 @@ namespace NXO.Server.Modules.TicTacToe
             List<List<int>> moves = new();
             TicTacToeBoard board = GameStatus.Board;
             Array a = logic.GetArrayFromBoard(board);
-            TicTacToePlayer currentPlayer = GameSettings.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First();
+            TicTacToePlayer currentPlayer = GameStatus.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First();
             var available_moves = logic.GetPositionFromBoardWhere(a, (path, arr) => arr.GetValue(path) is null, 2);
             if (!available_moves.Any())
             {
@@ -30,7 +30,7 @@ namespace NXO.Server.Modules.TicTacToe
                 moves.Add(move);
                 Array testBoard = logic.CloneBoard(a);
                 testBoard.SetValue(currentPlayer.Token, move.ToArray());
-                scores.Add(Minimax(a, 0, GameStatus, currentPlayer, GameSettings));
+                scores.Add(Minimax(a, 0, GameStatus, currentPlayer));
             }
             TicTacToeMove bestMove = new()
             {
@@ -41,11 +41,11 @@ namespace NXO.Server.Modules.TicTacToe
             return bestMove;
         }
 
-        public int Minimax(Array board, int depth, TicTacToeGameStatus GameStatus, TicTacToePlayer currentPlayer, TicTacToeSettings GameSettings)
+        public int Minimax(Array board, int depth, TicTacToeGameStatus GameStatus, TicTacToePlayer currentPlayer)
         {
             int bestVal;
             char currentToken = currentPlayer.Token;
-            TicTacToePlayer opp = GameSettings.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+            TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
             /*if (depth == 2)
             {
                 return currentPlayer.Bot ? -1000 : 1000;
@@ -73,7 +73,7 @@ namespace NXO.Server.Modules.TicTacToe
                 {
                     Array testBoard = logic.CloneBoard(board);
                     testBoard.SetValue(currentToken, move.ToArray());
-                    bestVal = Math.Max(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, GameSettings));
+                    bestVal = Math.Max(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp));
                 }
 
             }
@@ -84,7 +84,7 @@ namespace NXO.Server.Modules.TicTacToe
                 {
                     Array testBoard = logic.CloneBoard(board);
                     testBoard.SetValue(currentToken, move.ToArray());
-                    bestVal = Math.Min(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, GameSettings));
+                    bestVal = Math.Min(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp));
                 }
             }
             return bestVal;
