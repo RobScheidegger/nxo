@@ -31,7 +31,7 @@ namespace NXO.Server.Modules
         }
         public string GameType => "tictactoe";
         private char[] Tokens = { 'x', 'o', 'q'};
-        private int TokenIndex = -1;
+        private int TokenIndex = 0;
         private char GetNextToken()
         {
             var token = Tokens[TokenIndex % Tokens.Length];
