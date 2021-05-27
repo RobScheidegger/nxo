@@ -74,5 +74,39 @@ namespace NXO.UnitTests.TicTacToe
             Assert.True(o_wins);
             Assert.False(x_wins);
         }
+        [Fact]
+        public void Logic_3x3_WinDiagonal()
+        {
+            //Arrange
+            var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
+            {
+                {'x', null, 'x'},
+                {'x', 'o', 'o'},
+                {'x', 'x', null }
+            });
+            //Act
+            var o_wins = logic.HasPlayerWon('o', board);
+            var x_wins = logic.HasPlayerWon('x', board);
+            //Assert
+            Assert.True(x_wins);
+            Assert.False(o_wins);
+        }
+        [Fact]
+        public void Logic_3x3x3_WinAcrossDimensions()
+        {
+            //Arrange
+            var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
+            {
+                {'x', null, 'x'},
+                {'x', 'o', 'o'},
+                {'x', 'x', null }
+            });
+            //Act
+            var o_wins = logic.HasPlayerWon('o', board);
+            var x_wins = logic.HasPlayerWon('x', board);
+            //Assert
+            Assert.True(x_wins);
+            Assert.False(o_wins);
+        }
     }
 }

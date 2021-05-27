@@ -34,12 +34,16 @@ namespace NXO.Server.Modules.TicTacToe
         }
         public bool HasPlayerWon(char playerToken, TicTacToeBoard board)
         {
-            var vectors = GetVectorsForDimension(board.Dimension);
             var arrayBoard = GetArrayFromBoard(board);
-            var playerMoves = GetPositionFromBoardWhere(arrayBoard, (i, arr) => arr.GetValue(i) as char? == playerToken, board.Dimension);
+            return HasPlayerWon(playerToken, arrayBoard);
+        }
+        public bool HasPlayerWon(char playerToken, Array arrayBoard)
+        {
+            var vectors = GetVectorsForDimension(arrayBoard.Rank);
+            var playerMoves = GetPositionFromBoardWhere(arrayBoard, (i, arr) => arr.GetValue(i) as char? == playerToken, arrayBoard.Rank);
             var playerEdgeMoves = playerMoves.Where(move => move.Contains(0));
             var playerMovesHash = new HashSet<int>(playerMoves.Select(GetHash));
-            var boardSize = board.Boards.Count();
+            var boardSize = arrayBoard.GetLength(0);
 
             return playerEdgeMoves
                 .Any(move => vectors
