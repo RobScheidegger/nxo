@@ -342,6 +342,6 @@ body {
     min-width: 14rem;
 }
 
-    #infobox div {
-        height: 100%;
-    }
+#infobox .border {
+    height: 100%;
+}
