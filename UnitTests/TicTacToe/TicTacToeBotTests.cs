@@ -32,10 +32,7 @@ namespace NXO.UnitTests.TicTacToe
             var gameStatus = new TicTacToeGameStatus()
             {
                 Board = board,
-                CurrentPlayerId = "bot"
-            };
-            var gameSettings = new TicTacToeSettings()
-            {
+                CurrentPlayerId = "bot",
                 BoardSize = 3,
                 Dimensions = 2,
                 LobbyCode = "test",
@@ -57,7 +54,7 @@ namespace NXO.UnitTests.TicTacToe
                 }
             };
             //Act
-            var move = await bot.GetNextMove('x', gameStatus, gameSettings);
+            var move = await bot.GetNextMove('x', gameStatus);
             //Assert
             Assert.Equal(move.Path.ToArray(), new int[] { 0, 2 });
         }

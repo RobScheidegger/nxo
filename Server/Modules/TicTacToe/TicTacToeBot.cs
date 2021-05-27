@@ -13,13 +13,13 @@ namespace NXO.Server.Modules.TicTacToe
         {
             this.logic = logic;
         }
-        public async Task<TicTacToeMove> GetNextMove(char MoveIdentifier, TicTacToeGameStatus GameStatus, TicTacToeSettings GameSettings)
+        public async Task<TicTacToeMove> GetNextMove(char MoveIdentifier, TicTacToeGameStatus GameStatus)
         {
             List<int> scores = new();
             List<List<int>> moves = new();
             TicTacToeBoard board = GameStatus.Board;
             Array a = logic.GetArrayFromBoard(board);
-            char t = GameSettings.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First().Token;
+            char t = GameStatus.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First().Token;
             var available_moves = logic.GetPositionFromBoardWhere(a, (path, arr) => arr.GetValue(path) is null, 2);
             if (!available_moves.Any())
             {
@@ -35,7 +35,7 @@ namespace NXO.Server.Modules.TicTacToe
             TicTacToeMove bestMove = new()
             {
                 PlayerId = GameStatus.CurrentPlayerId,
-                LobbyCode = GameSettings.LobbyCode,
+                LobbyCode = GameStatus.LobbyCode,
                 Path = moves[scores.IndexOf(scores.Max())]
             };
             return bestMove;
