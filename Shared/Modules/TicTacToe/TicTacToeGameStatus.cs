@@ -8,9 +8,6 @@ namespace NXO.Shared.Modules
 {
     public class TicTacToeGameStatus : IGameStatus
     {
-        /// <summary>
-        /// Array representing the current state of the game board, with 
-        /// </summary>
         public TicTacToeBoard Board { get; set; }
         public string CurrentPlayerId { get; set; }
         public string CurrentPlayerName { get; set; }

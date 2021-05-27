@@ -94,7 +94,8 @@ namespace NXO.Server.Modules
                     g.History.Add(new TicTacToeGameHistoryEntry()
                     {
                         Message = moveMessage,
-                        PlayerName = currentPlayer.Nickname
+                        PlayerName = currentPlayer.Nickname,
+                        MovePath = properMove.Path
                     });
                 });
                 var updatedGame = await gameStatusRepository.Find(move.LobbyCode);

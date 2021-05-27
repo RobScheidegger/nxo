@@ -336,6 +336,10 @@ body {
         background-color: hsl(235, 20%, 100%) !important;
     }
 
+    #board .highlighted {
+        background-color: lightgreen !important;
+    }
+
 #infobox {
     flex: 30%;
     padding-left: 0.5rem;

@@ -8,5 +8,6 @@ namespace NXO.Shared.Modules
     {
         public string PlayerName { get; set; }
         public string Message { get; set; }
+        public IEnumerable<int> MovePath { get; set; }
     }
 }

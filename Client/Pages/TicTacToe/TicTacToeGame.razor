@@ -4,12 +4,11 @@
 
 <div id="game">
     <h3>Tic Tac Toe </h3>
-
     <div class="game-container">
         <div class="border" id="board">
             @if (GameState != null)
             { 
-                <TicTacToeGameBoardComponent Board="@GameState.Board" Path="Enumerable.Empty<int>()" ClickCell="ClickCell"></TicTacToeGameBoardComponent>
+                <TicTacToeGameBoardComponent Board="@GameState.Board" Path="Enumerable.Empty<int>()" ClickCell="ClickCell" Display="Display"></TicTacToeGameBoardComponent>
             }
             else
             {
@@ -35,11 +34,12 @@
                 }
                 @if(GameState != null)
                 {
-                    <table class="table table-striped">
+                    <table class="table table-striped table-sm">
                         <thead>
                             <tr>
                                 <th>Player</th>
                                 <th>Message</th>
+                                <th>Find</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -48,6 +48,11 @@
                             <tr>
                                 <td>@history.PlayerName</td>
                                 <td>@history.Message</td>
+                                <td>
+                                    <a class="btn btn-primary btn-sm" @onclick="() => Highlight(history.MovePath)">
+                                        Find
+                                    </a>
+                                </td>
                             </tr>
                             }
                         </tbody>
@@ -64,6 +69,7 @@
     [Parameter]
     public string PlayerId { get; set; }
     public string ErrorText { get; set; }
+    private TicTacToeDisplay Display { get; set; }
     private const int TimerInterval = 1000;
 
     public TicTacToeGameStatus GameState { get; set; }
@@ -105,4 +111,14 @@
             Console.WriteLine("ERROR" + err.Message);
         }
     }
+    private void Highlight(IEnumerable<int> Path)
+    {
+        Display = new TicTacToeDisplay()
+        {
+            HighlightedCellPath = Path
+        };
+        StateHasChanged();
+    }
+
+
 }
