@@ -30,7 +30,8 @@ namespace NXO.Server.Modules.TicTacToe
                 moves.Add(move);
                 Array testBoard = logic.CloneBoard(a);
                 testBoard.SetValue(currentPlayer.Token, move.ToArray());
-                scores.Add(Minimax(a, 0, GameStatus, currentPlayer));
+                TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+                scores.Add(Minimax(testBoard, 0, GameStatus, opp));
             }
             TicTacToeMove bestMove = new()
             {
@@ -46,10 +47,6 @@ namespace NXO.Server.Modules.TicTacToe
             int bestVal;
             char currentToken = currentPlayer.Token;
             TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
-            /*if (depth == 2)
-            {
-                return currentPlayer.Bot ? -1000 : 1000;
-            }*/
             int minmaxInt = currentPlayer.Bot ? 10 : -10;
             int score = logic.HasPlayerWon(currentToken, board) ? minmaxInt : logic.HasPlayerWon(opp.Token, board) ? (minmaxInt * -1) : 0;
             if (score == 10)

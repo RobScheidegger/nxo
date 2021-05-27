@@ -58,6 +58,46 @@ namespace NXO.UnitTests.TicTacToe
             //Assert
             Assert.Equal(move.Path.ToArray(), new int[] { 0, 2 });
         }
+
+        [Fact]
+        public async void Bot_3x3_ForcedMove_Horizontal()
+        {
+            //Arrange
+            var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
+            {
+                {'x', null, null},
+                {null, 'o', 'o'},
+                {null, null, 'x' }
+            });
+            var gameStatus = new TicTacToeGameStatus()
+            {
+                Board = board,
+                CurrentPlayerId = "bot",
+                BoardSize = 3,
+                Dimensions = 2,
+                LobbyCode = "test",
+                MaximumPlayers = 2,
+                Players = new List<TicTacToePlayer>()
+                {
+                    new TicTacToePlayer()
+                    {
+                        PlayerId = "playerTest",
+                        Bot = false,
+                        Token = 'x'
+                    },
+                    new TicTacToePlayer()
+                    {
+                        PlayerId = "bot",
+                        Bot = true,
+                        Token = 'o'
+                    }
+                }
+            };
+            //Act
+            var move = await bot.GetNextMove('o', gameStatus);
+            //Assert
+            Assert.Equal(move.Path.ToArray(), new int[] { 1, 0 });
+        }
         /*
         [Fact]
         public void Bot_3x3_DetermineMinimaxScore()
