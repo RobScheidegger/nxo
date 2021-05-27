@@ -61,7 +61,7 @@ namespace NXO.UnitTests.TicTacToe
             //Assert
             Assert.Equal(move.Path.ToArray(), new int[] { 0, 2 });
         }
-
+        /*
         [Fact]
         public void Bot_3x3_DetermineMinimaxScore()
         {
@@ -73,9 +73,9 @@ namespace NXO.UnitTests.TicTacToe
                 {'x', 'o', null }
             };
             //Act
-            var score = bot.EvaluateWin(board);
+            var score = bot.Minimax(;
             //Assert
             Assert.Equal(10,score);
-        }
+        }*/
     }
 }

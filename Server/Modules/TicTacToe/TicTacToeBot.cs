@@ -19,7 +19,7 @@ namespace NXO.Server.Modules.TicTacToe
             List<List<int>> moves = new();
             TicTacToeBoard board = GameStatus.Board;
             Array a = logic.GetArrayFromBoard(board);
-            char t = GameSettings.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First().Token;
+            TicTacToePlayer currentPlayer = GameSettings.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First();
             var available_moves = logic.GetPositionFromBoardWhere(a, (path, arr) => arr.GetValue(path) is null, 2);
             if (!available_moves.Any())
             {
@@ -29,8 +29,8 @@ namespace NXO.Server.Modules.TicTacToe
             {
                 moves.Add(move);
                 Array testBoard = logic.CloneBoard(a);
-                testBoard.SetValue(t, move.ToArray());
-                scores.Add(Minimax(a, 0, GameStatus.CurrentPlayerId, t));
+                testBoard.SetValue(currentPlayer.Token, move.ToArray());
+                scores.Add(Minimax(a, 0, GameStatus, currentPlayer, GameSettings));
             }
             TicTacToeMove bestMove = new()
             {
@@ -41,14 +41,17 @@ namespace NXO.Server.Modules.TicTacToe
             return bestMove;
         }
 
-        public int Minimax(Array board, int depth, string currentPlayer, char currentToken)
+        public int Minimax(Array board, int depth, TicTacToeGameStatus GameStatus, TicTacToePlayer currentPlayer, TicTacToeSettings GameSettings)
         {
             int bestVal;
-            if (depth == 1)
+            char currentToken = currentPlayer.Token;
+            TicTacToePlayer opp = GameSettings.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+            /*if (depth == 2)
             {
-                return 0;
-            }
-            int score = EvaluateWin(board);
+                return currentPlayer.Bot ? -1000 : 1000;
+            }*/
+            int minmaxInt = currentPlayer.Bot ? 10 : -10;
+            int score = logic.HasPlayerWon(currentToken, board) ? minmaxInt : logic.HasPlayerWon(opp.Token, board) ? (minmaxInt * -1) : 0;
             if (score == 10)
             {
                 return score - depth;
@@ -62,58 +65,29 @@ namespace NXO.Server.Modules.TicTacToe
             {
                 return 0;
             }
-            if (currentPlayer.Equals("bot")) // MAX
+
+            if (currentPlayer.Bot) // MAX
             {
                 bestVal = -1000;
                 foreach (var move in available_moves)
                 {
                     Array testBoard = logic.CloneBoard(board);
                     testBoard.SetValue(currentToken, move.ToArray());
-                    bestVal = Math.Max(bestVal,Minimax(testBoard, depth+1, currentPlayer, currentToken));
+                    bestVal = Math.Max(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, GameSettings));
                 }
 
-            } else // MIN
+            }
+            else // MIN
             {
                 bestVal = 1000;
                 foreach (var move in available_moves)
                 {
                     Array testBoard = logic.CloneBoard(board);
                     testBoard.SetValue(currentToken, move.ToArray());
-                    bestVal = Math.Min(bestVal, Minimax(testBoard, depth + 1, currentPlayer, currentToken));
+                    bestVal = Math.Min(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, GameSettings));
                 }
             }
             return bestVal;
         }
-
-        public int EvaluateWin(Array board, int[] move = null, char currentPlayer = '_')
-        {
-            int dim = board.Rank;
-            int size = board.GetLength(0);
-            if (move != null)
-            {
-                Array mov = Array.CreateInstance(typeof(int), dim);
-                for (int d = 0; d < dim; d++)
-                {
-
-                }
-
-                var available_moves = logic.GetPositionFromBoardWhere(board, (path, arr) => arr.GetValue(path) as char? == currentPlayer, 2);
-
-
-            } else
-            {
-
-                for (int s = 0; s < size; s++)
-                {
-                    for (int d = 0; d < dim; d++)
-                    {
-
-                    }
-                }
-            }
-            return 0;
-        }
-
-        
     }
 }
