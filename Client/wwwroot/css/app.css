@@ -4,10 +4,6 @@ html, body {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-a, .btn-link {
-    color: #0366d6;
-}
-
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
@@ -311,6 +307,7 @@ body {
     }
 
     #board td {
+        display: flex;
         background-color: hsl(235, 20%, 100%);
         margin: 2px;
         border: 1px solid hsl(235, 20%, 85%)
@@ -320,9 +317,23 @@ body {
         margin: 0px;
     }
 
+    #board a {
+        display: flex;
+        align-items: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        color: black;
+        text-decoration: none;
+    }
+
     #board a:hover {
         background-color: hsl(235, 20%, 97.5%);
         cursor: pointer;
+    }
+
+    #board .occupied-cell {
+        cursor: default !important;
+        background-color: hsl(235, 20%, 100%) !important;
     }
 
 #infobox {
