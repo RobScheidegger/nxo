@@ -18,17 +18,20 @@ namespace NXO.Server.Modules
         private readonly IRepository<TicTacToeGameStatus> gameStatusRepository;
         private readonly IRepository<Game> gameRepository;
         private readonly TicTicToeBot bot;
-        public TicTacToeModuleManager(IGuidProvider guid, IRepository<TicTacToeSettings> settings, IRepository<Game> gameRepository, IRepository<TicTacToeGameStatus> gameStatus)
+        private readonly TicTacToeGameLogicHandler logic;
+        public TicTacToeModuleManager(IGuidProvider guid, IRepository<TicTacToeSettings> settings, IRepository<Game> gameRepository, 
+            IRepository<TicTacToeGameStatus> gameStatus, TicTacToeGameLogicHandler logic, TicTicToeBot bot)
         {
             this.guid = guid;
             this.settingsRepository = settings;
             this.gameRepository = gameRepository;
             this.gameStatusRepository = gameStatus;
-            bot = new TicTicToeBot();
+            this.logic = logic;
+            this.bot = bot;
         }
         public string GameType => "tictactoe";
         private char[] Tokens = { 'x', 'o', 'q'};
-        private int TokenIndex = 0;
+        private int TokenIndex = -1;
         private char GetNextToken()
         {
             var token = Tokens[TokenIndex % Tokens.Length];
@@ -150,38 +153,6 @@ namespace NXO.Server.Modules
             };
 
             await gameStatusRepository.Add(LobbyCode, gameStatus);
-        }
-
-        public bool HasPlayerWon(char playerToken, TicTacToeBoard board)
-        {
-            var vectors = GetVectorsForDimension(board.Dimension);
-            var arrayBoard = bot.GetArrayFromBoard(board);
-            var playerMoves = bot.GetPositionFromBoardWhere(arrayBoard, (i, arr) => arr.GetValue(i) as char? == playerToken, board.Dimension);
-            var playerEdgeMoves = playerMoves.Where(move => move.Contains(0));
-            var playerMovesHash = new HashSet<int[]>(playerMoves);
-            var boardSize = board.Boards.Count();
-
-            return playerEdgeMoves.Any(move => vectors.Any(vector =>
-                {
-                    var moveCheck = Enumerable.Range(0, boardSize).Select(n => Add(move, Multiply(n, vector)));
-
-                    return moveCheck.All(playerMovesHash.Contains);
-                }));
-
-            int[] Add(int[] firstArray, int[] secondArray)
-            {
-                return firstArray.Zip(secondArray, (x, y) => x + y).ToArray();
-            }
-
-            int[] Multiply(int scalar, int[] array)
-            {
-                return array.Select(i => i * scalar).ToArray();
-            }
-        }
-
-        private int[][] GetVectorsForDimension(int dimension)
-        {
-            throw new NotImplementedException();
         }
     }
 }
