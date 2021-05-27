@@ -18,15 +18,40 @@
         </div>
 
         <div id="infobox">
-            <div class="border">
+            <div class="border p-2">
                 @if (GameState != null)
                 {
                     <h4>@GameState.CurrentPlayerName's Turn</h4>
                 }
-                <h5>@Movetext</h5>
+                @if(!string.IsNullOrEmpty(ErrorText))
+                {
+                    <div class="alert alert-danger">
+                        @ErrorText
+                    </div>
+                }
                 @if (GameState != null && GameState.Completed)
                 {
                     <h5>Winner: @GameState.Winner.Nickname</h5>
+                }
+                @if(GameState != null)
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Player</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var history in GameState.History)
+                            {
+                            <tr>
+                                <td>@history.PlayerName</td>
+                                <td>@history.Message</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
                 }
             </div>
         </div>
@@ -38,7 +63,7 @@
     public string LobbyCode { get; set; }
     [Parameter]
     public string PlayerId { get; set; }
-    public string Movetext { get; set; }
+    public string ErrorText { get; set; }
     private const int TimerInterval = 1000;
 
     public TicTacToeGameStatus GameState { get; set; }
@@ -61,7 +86,11 @@
             PlayerId = PlayerId
         };
         var moveResult = await Http.PostFromJsonAsync<TicTacToeMove, MoveResult>("TicTacToe/PerformMove", move);
-        Movetext = $"{moveResult.Message}";
+        if(!moveResult.Success)
+        {
+            ErrorText = moveResult.Message;
+        }
+
         await Refresh();
     }
     private async Task Refresh()

@@ -84,12 +84,18 @@ namespace NXO.Server.Modules
                 var currentPlayer = gameStatus.Players.ElementAt(currentPlayerIndex);
                 var nextPlayerIndex = (currentPlayerIndex + 1) % gameStatus.Players.Count();
                 var nextPlayer = gameStatus.Players.ElementAt(nextPlayerIndex);
+                var moveMessage = $"{currentPlayer.Nickname} placed a '{currentPlayer.Token}' at '{string.Join(',', properMove.Path)}'";
 
                 await gameStatusRepository.Update(move.LobbyCode, g =>
                 {
                     g.Board.Place(currentPlayer.Token, properMove.Path);
                     g.CurrentPlayerId = nextPlayer.PlayerId;
                     g.CurrentPlayerName = nextPlayer.Nickname;
+                    g.History.Add(new TicTacToeGameHistoryEntry()
+                    {
+                        Message = moveMessage,
+                        PlayerName = currentPlayer.Nickname
+                    });
                 });
                 var updatedGame = await gameStatusRepository.Find(move.LobbyCode);
                 if (logic.HasPlayerWon(currentPlayer.Token, updatedGame.Board))
@@ -99,7 +105,7 @@ namespace NXO.Server.Modules
                 return new MoveResult()
                 {
                     Success = true,
-                    Message = $"{currentPlayer.Nickname} placed a '{currentPlayer.Token}' at '{string.Join(',', properMove.Path)}'"
+                    Message = moveMessage
                 };
             }
             else
@@ -145,14 +151,13 @@ namespace NXO.Server.Modules
         public async Task StartGame(string LobbyCode)
         {
             var rand = new Random();
-
             await gameStatusRepository.Update(LobbyCode, g =>
             {
                 var startingPlayer = g.Players.ElementAt(rand.Next(0, g.PlayerCount));
-                var lengths = Enumerable.Range(0, g.Dimensions).Select(i => g.BoardSize);
                 g.CurrentPlayerId = startingPlayer.PlayerId;
                 g.CurrentPlayerName = startingPlayer.Nickname;
                 g.Board = TicTacToeBoard.Construct(g.Dimensions, g.BoardSize);
+                g.History = new List<TicTacToeGameHistoryEntry>();
             });
         }
 
