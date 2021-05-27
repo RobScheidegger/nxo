@@ -84,7 +84,7 @@ namespace NXO.Server.Modules
                 var currentPlayer = gameStatus.Players.ElementAt(currentPlayerIndex);
                 var nextPlayerIndex = (currentPlayerIndex + 1) % gameStatus.Players.Count();
                 var nextPlayer = gameStatus.Players.ElementAt(nextPlayerIndex);
-                var moveMessage = $"{currentPlayer.Nickname} placed a '{currentPlayer.Token}' at '{string.Join(',', properMove.Path)}'";
+                var moveMessage = $"{currentPlayer.Nickname} placed a '{currentPlayer.Token}' at '{string.Join(',', properMove.Path.Select(i => i + 1))}'";
 
                 await gameStatusRepository.Update(move.LobbyCode, g =>
                 {

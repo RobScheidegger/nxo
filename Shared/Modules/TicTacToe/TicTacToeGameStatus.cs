@@ -26,7 +26,6 @@ namespace NXO.Shared.Modules
         public string Stage { get; set; }
         public string Nickname { get; set; }
         public string HostPlayerId { get; set; }
-
         public int PlayerCount { get {
                 return Players?.Count()??0;
             } }
