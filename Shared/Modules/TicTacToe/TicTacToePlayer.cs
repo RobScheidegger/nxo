@@ -1,6 +1,6 @@
 ﻿namespace NXO.Shared.Modules
 {
-    public class TicTacToePlayer
+    public record TicTacToePlayer
     {
         /// <summary>
         /// The Id of the corresponding player.

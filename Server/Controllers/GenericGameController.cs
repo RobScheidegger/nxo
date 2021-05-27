@@ -36,5 +36,10 @@ namespace NXO.Server.Controllers
         {
             return await manager.GetGameStateAsync(LobbyCode) as GameStatusClass;
         }
+        [HttpPost("StartGame")]
+        public async Task<StartGameResult> StartGame(string LobbyCode)
+        {
+            return await manager.StartGame(LobbyCode);
+        }
     }
 }

@@ -1,9 +1,11 @@
 ﻿@page "/tictactoe/lobby/{LobbyCode}/{PlayerId}"
 @inject HttpClient Http
-@using System.Timers 
+@inject NavigationManager navigation
+@using System.Timers
 
 <div class="container">
-    @if (Message != null){
+    @if (Message != null)
+    {
         <div class="alert alert-@MessageType">
             @Message
         </div>
@@ -16,21 +18,22 @@
                 </div>
                 <div class="card-body">
                     <div>Code: @Status?.LobbyCode</div>
+                    <div>Status: @Status?.Stage</div>
                     @if (Status != null && Status?.HostPlayerId == PlayerId)
                     {
                         <h4>Game Settings</h4>
                         <div class="form-group">
                             <label class="control-label">Maximum Players</label>
-                            <input class="form-control" @bind-value="@Status.MaximumPlayers" type="number" />
+                            <input class="form-control" @bind="@Status.MaximumPlayers" type="number" />
                         </div>
                         <h4>Game Configuration</h4>
                         <div class="form-group">
                             <label class="control-label">Dimensions</label>
-                            <input class="form-control" @bind-value="@Status.Dimensions" type="number" />
+                            <input class="form-control" @bind="@Status.Dimensions" type="number" />
                         </div>
                         <div class="form-group">
                             <label class="control-label">Board Size</label>
-                            <input class="form-control" @bind-value="@Status.BoardSize" type="number" />
+                            <input class="form-control" @bind="@Status.BoardSize" type="number" />
                         </div>
                         <div class="form-group mt-2">
                             <a class="btn btn-primary" @onclick="ClickSaveSettings">Save Settings</a>
@@ -78,16 +81,16 @@
 </div>
 @if (Status?.HostPlayerId == PlayerId)
 {
-<div class="fixed-bottom float-right p-4">
-    <a class="btn btn-success" @onclick="ClickStartGame">Start Game</a>
-</div>
+    <div class="fixed-bottom float-right p-4">
+        <a class="btn btn-success" @onclick="ClickStartGame">Start Game</a>
+    </div>
 }
 
 @code {
-    [Parameter]
-    public string LobbyCode { get; set; }
-    [Parameter]
-    public string PlayerId { get; set; }
+        [Parameter]
+        public string LobbyCode { get; set; }
+        [Parameter]
+        public string PlayerId { get; set; }
     public TicTacToeGameStatus Status { get; set; }
     public string Message { get; set; }
     public string MessageType { get; set; }
@@ -105,8 +108,15 @@
     {
         try
         {
-            Status = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GameStatus?LobbyCode={LobbyCode}", LobbyCode);
-            StateHasChanged();
+            Status = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+            if (Status.Stage != "Lobby")
+            {
+                navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}");
+            }
+            else
+            {
+                StateHasChanged();
+            }
         }
         catch (Exception err)
         {
@@ -121,6 +131,10 @@
     }
     private async Task ClickStartGame()
     {
+        var result = await Http.PostFromJsonAsync<string, StartGameResult>("TicTacToe/StartGame", LobbyCode);
+        if (result.Success)
+        {
 
+        }
     }
 }

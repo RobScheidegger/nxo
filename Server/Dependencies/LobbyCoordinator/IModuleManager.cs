@@ -20,7 +20,7 @@ namespace NXO.Server.Dependencies
         Task<MoveResult> PerformMoveAsync(IGameMove move);
         Task<SaveSettingsResult> SaveSettingsAsync(IGameStatus settings);
         Task<IGameStatus> GetGameStateAsync(string LobbyCode);
-        Task StartGame(string LobbyCode);
+        Task<StartGameResult> StartGame(string LobbyCode);
         Task<bool> HasLobbyStartedAsync(string LobbyCode);
         Task<bool> SpotAvailableAsync(string LobbyCode);
         Task<JoinResult> JoinAsync(JoinRequest request);

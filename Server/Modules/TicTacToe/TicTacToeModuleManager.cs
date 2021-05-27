@@ -149,7 +149,7 @@ namespace NXO.Server.Modules
             };
         }
 
-        public async Task StartGame(string LobbyCode)
+        public async Task<StartGameResult> StartGame(string LobbyCode)
         {
             var rand = new Random();
             await gameStatusRepository.Update(LobbyCode, g =>
@@ -160,6 +160,7 @@ namespace NXO.Server.Modules
                 g.Board = TicTacToeBoard.Construct(g.Dimensions, g.BoardSize);
                 g.History = new List<TicTacToeGameHistoryEntry>();
             });
+            return new StartGameResult() { Success = true };
         }
 
         public async Task<bool> HasLobbyStartedAsync(string LobbyCode)
