@@ -58,7 +58,7 @@
         };
         var moveResult = await Http.PostFromJsonAsync<TicTacToeMove, MoveResult>("TicTacToe/PerformMove", move);
         Movetext = $"{moveResult.Message}";
-        StateHasChanged();
+        await Refresh();
     }
     private async Task Refresh()
     {

@@ -8,14 +8,19 @@ namespace NXO.Server.Modules.TicTacToe
 {
     public class TicTicToeBot
     {
+        private readonly TicTacToeGameLogicHandler logic;
+        public TicTicToeBot(TicTacToeGameLogicHandler logic)
+        {
+            this.logic = logic;
+        }
         public async Task<TicTacToeMove> GetNextMove(char MoveIdentifier, TicTacToeGameStatus GameStatus, TicTacToeSettings GameSettings)
         {
             List<int> scores = new();
-            List<int[]> moves = new();
+            List<List<int>> moves = new();
             TicTacToeBoard board = GameStatus.Board;
-            Array a = GetArrayFromBoard(board);
+            Array a = logic.GetArrayFromBoard(board);
             char t = GameSettings.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First().Token;
-            var available_moves = GetPositionFromBoardWhere(a, (path, arr) => arr.GetValue(path) is null, 2);
+            var available_moves = logic.GetPositionFromBoardWhere(a, (path, arr) => arr.GetValue(path) is null, 2);
             if (!available_moves.Any())
             {
                 return null;
@@ -23,8 +28,8 @@ namespace NXO.Server.Modules.TicTacToe
             foreach (var move in available_moves)
             {
                 moves.Add(move);
-                Array testBoard = CloneBoard(a);
-                testBoard.SetValue(t, move);
+                Array testBoard = logic.CloneBoard(a);
+                testBoard.SetValue(t, move.ToArray());
                 scores.Add(Minimax(a, 0, GameStatus.CurrentPlayerId, t));
             }
             TicTacToeMove bestMove = new()
@@ -52,7 +57,7 @@ namespace NXO.Server.Modules.TicTacToe
             {
                 return score + depth;
             }
-            var available_moves = GetPositionFromBoardWhere(board, (path, arr) => arr.GetValue(path) is null, 2);
+            var available_moves = logic.GetPositionFromBoardWhere(board, (path, arr) => arr.GetValue(path) is null, 2);
             if (!available_moves.Any())
             {
                 return 0;
@@ -62,8 +67,8 @@ namespace NXO.Server.Modules.TicTacToe
                 bestVal = -1000;
                 foreach (var move in available_moves)
                 {
-                    Array testBoard = CloneBoard(board);
-                    testBoard.SetValue(currentToken, move);
+                    Array testBoard = logic.CloneBoard(board);
+                    testBoard.SetValue(currentToken, move.ToArray());
                     bestVal = Math.Max(bestVal,Minimax(testBoard, depth+1, currentPlayer, currentToken));
                 }
 
@@ -72,8 +77,8 @@ namespace NXO.Server.Modules.TicTacToe
                 bestVal = 1000;
                 foreach (var move in available_moves)
                 {
-                    Array testBoard = CloneBoard(board);
-                    testBoard.SetValue(currentToken, move);
+                    Array testBoard = logic.CloneBoard(board);
+                    testBoard.SetValue(currentToken, move.ToArray());
                     bestVal = Math.Min(bestVal, Minimax(testBoard, depth + 1, currentPlayer, currentToken));
                 }
             }
@@ -92,7 +97,7 @@ namespace NXO.Server.Modules.TicTacToe
 
                 }
 
-                var available_moves = GetPositionFromBoardWhere(board, (path, arr) => arr.GetValue(path) as char? == currentPlayer, 2);
+                var available_moves = logic.GetPositionFromBoardWhere(board, (path, arr) => arr.GetValue(path) as char? == currentPlayer, 2);
 
 
             } else
@@ -109,63 +114,6 @@ namespace NXO.Server.Modules.TicTacToe
             return 0;
         }
 
-        public static Array CloneBoard(Array originalBoard)
-        {
-            var output = Array.CreateInstance(typeof(char?),
-                Enumerable.Range(0, originalBoard.Rank).Select(i => originalBoard.GetLength(0)).ToArray());
-            Array.Copy(originalBoard, output, originalBoard.Length);
-            return output;
-        }
-
-        public Array GetArrayFromBoard(TicTacToeBoard board)
-        {
-            var output = Array.CreateInstance(typeof(char?), 
-                Enumerable.Range(0, board.Dimension).Select(i => board.Boards.Count()).ToArray());
-            ParseBoardTree(ref output, board, Enumerable.Empty<int>());
-            return output;
-        }
-
-        public void ParseBoardTree(ref Array array, TicTacToeBoard board, IEnumerable<int> path)
-        {
-            if (board.Dimension == 0)
-            {
-                array.SetValue(board.Cell, path.ToArray());
-            }
-            else
-            {
-                foreach (TicTacToeBoard b in board.Boards)
-                {
-                    ParseBoardTree(ref array, b, path.Append(b.Position));
-                }
-            }
-        }
-        public IEnumerable<int[]> GetPositionFromBoardWhere(Array board, Func<int[], Array, bool> selector, int currentDimension, int[] path = null)
-        {
-            if (path == null)
-                path = new int[board.Rank];
-            if (currentDimension == 1)
-            {
-                for (int i = 0; i < board.GetLength(0); i++)
-                {
-                    path[board.Rank - currentDimension] = i;
-                    if (selector(path, board))
-                    {
-                        var tempPath = new List<int>(path).ToArray();
-                        yield return tempPath;
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < board.GetLength(0); i++)
-                {
-                    path[board.Rank - currentDimension] = i;
-                    foreach(var result in GetPositionFromBoardWhere(board, selector, currentDimension - 1, path))
-                    {
-                        yield return result;
-                    }
-                }
-            }
-        }
+        
     }
 }
