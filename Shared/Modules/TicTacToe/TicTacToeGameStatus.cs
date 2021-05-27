@@ -14,6 +14,8 @@ namespace NXO.Shared.Modules
         public TicTacToeBoard Board { get; set; }
         public string CurrentPlayerId { get; set; }
         public string CurrentPlayerName { get; set; }
+        public TicTacToePlayer Winner { get; set; }
+        public bool Completed { get; set; }
     }
     public class TicTacToeBoard
     {

@@ -83,6 +83,14 @@ namespace NXO.Server.Modules
             var properMove = move as TicTacToeMove;
             var gameStatus = await gameStatusRepository.Find(move.LobbyCode);
             var settings = await settingsRepository.Find(move.LobbyCode);
+            if(gameStatus.Completed)
+            {
+                return new MoveResult()
+                {
+                    Success = false,
+                    Message = "Cannot place move, game is over."
+                };
+            }
             if(IsValidMove(properMove, gameStatus))
             {
                 var playerToken = settings.Players.Where(i => i.PlayerId == move.PlayerId).First().Token;
@@ -90,12 +98,18 @@ namespace NXO.Server.Modules
                 var currentPlayer = settings.Players.ElementAt(currentPlayerIndex);
                 var nextPlayerIndex = (currentPlayerIndex + 1) % settings.Players.Count();
                 var nextPlayer = settings.Players.ElementAt(nextPlayerIndex);
+
                 await gameStatusRepository.Update(move.LobbyCode, g =>
                 {
                     g.Board.Place(playerToken, properMove.Path);
                     g.CurrentPlayerId = nextPlayer.PlayerId;
                     g.CurrentPlayerName = nextPlayer.Nickname;
                 });
+                var updatedGame = await gameStatusRepository.Find(move.LobbyCode);
+                if (logic.HasPlayerWon(currentPlayer.Token, updatedGame.Board))
+                {
+                    await CompleteGame(move.LobbyCode, currentPlayer);
+                }
                 return new MoveResult()
                 {
                     Success = true,
@@ -110,6 +124,15 @@ namespace NXO.Server.Modules
                     Message = "Move was not valid."
                 };
             }
+        }
+
+        private async Task CompleteGame(string lobbyCode, TicTacToePlayer winningPlayer)
+        {
+            await gameStatusRepository.Update(lobbyCode, game =>
+            {
+                game.Winner = winningPlayer;
+                game.Completed = true;
+            });
         }
 
         private static bool IsValidMove(TicTacToeMove properMove, TicTacToeGameStatus gameStatus)

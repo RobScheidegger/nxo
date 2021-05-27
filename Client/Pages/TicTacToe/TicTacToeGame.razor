@@ -23,7 +23,11 @@
                 {
                     <h4>@GameState.CurrentPlayerName's Turn</h4>
                 }
-                @Movetext
+                <h5>@Movetext</h5>
+                @if (GameState != null && GameState.Completed)
+                {
+                    <h5>Winner: @GameState.Winner.Nickname</h5>
+                }
             </div>
         </div>
     </div>
