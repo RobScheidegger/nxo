@@ -24,8 +24,7 @@
                     <tr>
                         @foreach (var subBoard in board.Boards)
                         {
-                            var css = subBoard.Dimension == 0 ? $"display: inline-block; width: {CellWidth}px; height: {CellHeight}px;" : "";
-                            <td style="@css"><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position).Append(subBoard.Position)" ClickCell="ClickCell"/></td>
+                            <td><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position).Append(subBoard.Position)" ClickCell="ClickCell"/></td>
                         }
                     </tr>
                 }
@@ -35,7 +34,7 @@
     }
     else //0
     {
-        <a @onclick="async () => ClickCell(Path)" class="m-0 h-100 w-100" style="display: inline-block"><div class="text-center p-0 text-primary">@Board.Cell</div></a>
+        <a class="@(Board.Cell != null ? "occupied-cell" : null)" @onclick="async () => ClickCell(Path)">@Board.Cell</a>
     }
 }
 
