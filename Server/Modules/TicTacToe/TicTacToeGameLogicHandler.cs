@@ -123,6 +123,13 @@ namespace NXO.Server.Modules.TicTacToe
                 }
             }
         }
+
+        internal bool IsDraw(TicTacToeBoard board)
+        {
+            var available_moves = GetPositionFromBoardWhere(GetArrayFromBoard(board), (path, arr) => arr.GetValue(path) is null, board.Dimension);
+            return !available_moves.Any();
+        }
+
         public int GetHash(IEnumerable<int> array)
         {
             return array.Aggregate(0, (i, j) => HashCode.Combine(i, j));

@@ -86,6 +86,40 @@ namespace NXO.Server.Services
             
             await tictactoeGames.Add(testGame2.LobbyCode, testGame2);
             await tictactoe.StartGame(testGame2.LobbyCode);
+
+            var testGame3 = new TicTacToeGameStatus()
+            {
+                LobbyCode = "test3",
+                DateCreated = DateTime.Now,
+                GameType = "tictactoe",
+                HostPlayerId = "player1",
+                Nickname = "Test Game",
+                Stage = "In Game",
+                MaximumPlayers = 2,
+
+                Players = new List<TicTacToePlayer>()
+                {
+                    new TicTacToePlayer()
+                    {
+                        PlayerId = "player1",
+                        Nickname = "Test Player 1",
+                        Token = 'x',
+                        Bot = false
+                    },
+                    new TicTacToePlayer()
+                    {
+                        PlayerId = "bot",
+                        Nickname = "Test Bot",
+                        Token = 'o',
+                        Bot = true
+                    }
+                },
+                BoardSize = 3,
+                Dimensions = 2
+            };
+
+            await tictactoeGames.Add(testGame3.LobbyCode, testGame3);
+            await tictactoe.StartGame(testGame3.LobbyCode);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

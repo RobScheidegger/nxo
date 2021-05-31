@@ -83,6 +83,7 @@
 
         await base.OnInitializedAsync();
     }
+
     private async void ClickCell(IEnumerable<int> Path)
     {
         var move = new TicTacToeMove()
@@ -96,7 +97,6 @@
         {
             ErrorText = moveResult.Message;
         }
-
         await Refresh();
     }
     private async Task Refresh()

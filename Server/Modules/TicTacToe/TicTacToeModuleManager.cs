@@ -102,6 +102,13 @@ namespace NXO.Server.Modules
                 if (logic.HasPlayerWon(currentPlayer.Token, updatedGame.Board))
                 {
                     await CompleteGame(move.LobbyCode, currentPlayer);
+                } else if (logic.IsDraw(updatedGame.Board)) {
+                    await CompleteGame(move.LobbyCode, null);
+                }
+                else if (nextPlayer.Bot)
+                {
+                    var botMove = await bot.GetNextMove(gameStatus);
+                    await PerformMoveAsync(botMove);
                 }
                 return new MoveResult()
                 {
@@ -160,6 +167,12 @@ namespace NXO.Server.Modules
                 g.Board = TicTacToeBoard.Construct(g.Dimensions, g.BoardSize);
                 g.History = new List<TicTacToeGameHistoryEntry>();
             });
+            var game = await gameStatusRepository.Find(LobbyCode);
+            if (game.Players.Where(p => p.PlayerId == game.CurrentPlayerId).First().Bot)
+            {
+                var botMove = await bot.GetNextMove(game);
+                await PerformMoveAsync(botMove);
+            }
             return new StartGameResult() { Success = true };
         }
 

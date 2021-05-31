@@ -54,7 +54,7 @@ namespace NXO.UnitTests.TicTacToe
                 }
             };
             //Act
-            var move = await bot.GetNextMove('x', gameStatus);
+            var move = await bot.GetNextMove(gameStatus);
             //Assert
             Assert.Equal(move.Path.ToArray(), new int[] { 0, 2 });
         }
@@ -94,7 +94,7 @@ namespace NXO.UnitTests.TicTacToe
                 }
             };
             //Act
-            var move = await bot.GetNextMove('o', gameStatus);
+            var move = await bot.GetNextMove(gameStatus);
             //Assert
             Assert.Equal(move.Path.ToArray(), new int[] { 1, 0 });
         }
