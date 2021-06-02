@@ -115,7 +115,7 @@ namespace NXO.Server.Services
                     }
                 },
                 BoardSize = 3,
-                Dimensions = 2
+                Dimensions = 3
             };
 
             await tictactoeGames.Add(testGame3.LobbyCode, testGame3);

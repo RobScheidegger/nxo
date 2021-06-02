@@ -10,8 +10,8 @@ namespace NXO.Server.Modules.TicTacToe
     {
         private readonly TicTacToeGameLogicHandler logic;
         private readonly Random random = new();
-        private readonly int A = -1000;
-        private readonly int B = 1000;
+        private readonly int defaultAlpha = -1000;
+        private readonly int defaultBeta = 1000;
 
         public TicTacToeBot(TicTacToeGameLogicHandler logic)
         {
@@ -35,7 +35,7 @@ namespace NXO.Server.Modules.TicTacToe
                 moves.Add(move);
                 Array testBoard = logic.CloneBoard(a);
                 testBoard.SetValue(currentPlayer.Token, move.ToArray());
-                scores.Add(Minimax(testBoard, 0, GameStatus, opp, A, B));
+                scores.Add(Minimax(testBoard, 0, GameStatus, opp, defaultAlpha, defaultBeta));
             }
 
             var searchIndex = random.Next(0, scores.LastIndexOf(scores.Max()));
@@ -54,10 +54,7 @@ namespace NXO.Server.Modules.TicTacToe
 
         public int Minimax(Array board, int depth, TicTacToeGameStatus GameStatus, TicTacToePlayer currentPlayer, int alpha, int beta)
         {
-            if (depth >= 10)
-            {
-                return 0;
-            }
+
             int bestVal;
             char currentToken = currentPlayer.Token;
             TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
@@ -78,14 +75,19 @@ namespace NXO.Server.Modules.TicTacToe
                 return 0;
             }
 
+            if (depth >= 5)
+            {
+                return currentPlayer.Bot ? defaultAlpha : defaultBeta;
+            }
+
             if (currentPlayer.Bot) // MAX
             {
-                bestVal = A;
+                bestVal = defaultAlpha;
                 foreach (var move in available_moves)
                 {
                     Array testBoard = logic.CloneBoard(board);
                     testBoard.SetValue(currentToken, move.ToArray());
-                    bestVal = Math.Max(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, alpha, beta)); ;
+                    bestVal = Math.Max(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, alpha, beta));
                     alpha = Math.Max(alpha, bestVal);
                     if (beta <= alpha)
                     {
@@ -96,7 +98,7 @@ namespace NXO.Server.Modules.TicTacToe
             }
             else // MIN
             {
-                bestVal = B;
+                bestVal = defaultBeta;
                 foreach (var move in available_moves)
                 {
                     Array testBoard = logic.CloneBoard(board);
