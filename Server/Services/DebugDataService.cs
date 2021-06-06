@@ -114,7 +114,7 @@ namespace NXO.Server.Services
                         Bot = true
                     }
                 },
-                BoardSize = 3,
+                BoardSize = 4,
                 Dimensions = 3
             };
 
