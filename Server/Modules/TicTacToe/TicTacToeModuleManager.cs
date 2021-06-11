@@ -39,7 +39,9 @@ namespace NXO.Server.Modules
             var player = new TicTacToePlayer()
             {
                 PlayerId = guid.New(),
-                Nickname = request.Nickname
+                Nickname = request.Nickname,
+                Token = 'x',
+                Bot = false
             };
             var tictactoeGame = new TicTacToeGameStatus()
             {
@@ -148,6 +150,7 @@ namespace NXO.Server.Modules
             {
                 s.BoardSize = properSettings.BoardSize;
                 s.Dimensions = properSettings.Dimensions;
+                s.MaximumPlayers = properSettings.MaximumPlayers;
             });
             return new SaveSettingsResult()
             {
@@ -166,6 +169,7 @@ namespace NXO.Server.Modules
                 g.CurrentPlayerName = startingPlayer.Nickname;
                 g.Board = TicTacToeBoard.Construct(g.Dimensions, g.BoardSize);
                 g.History = new List<TicTacToeGameHistoryEntry>();
+                g.Stage = "In Progress";
             });
             var game = await gameStatusRepository.Find(LobbyCode);
             if (game.Players.Where(p => p.PlayerId == game.CurrentPlayerId).First().Bot)
@@ -187,7 +191,8 @@ namespace NXO.Server.Modules
             var newPlayer = new TicTacToePlayer()
             {
                 PlayerId = guid.New(),
-                Nickname = request.Nickname
+                Nickname = request.Nickname,
+                Token = GetNextToken()
             };
             await gameStatusRepository.Update(request.GameCode, g => g.Players = g.Players.Append(newPlayer));
             return new JoinResult()

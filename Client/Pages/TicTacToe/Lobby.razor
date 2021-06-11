@@ -37,6 +37,7 @@
                         </div>
                         <div class="form-group mt-2">
                             <a class="btn btn-primary" @onclick="ClickSaveSettings">Save Settings</a>
+                            <a class="btn btn-success" @onclick="ClickStartGame">Start Game</a>
                         </div>
                     }
                 </div>
@@ -54,6 +55,7 @@
                                 <th>Id</th>
                                 <th>Nickname</th>
                                 <th>Type</th>
+                                <th>Token</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -65,6 +67,7 @@
                                         <td>@player.PlayerId</td>
                                         <td>@player.Nickname</td>
                                         <td>@(player.Bot ? "Bot" : "Human")</td>
+                                        <td>@player.Token</td>
                                     </tr>
                                 }
                             }
@@ -79,36 +82,40 @@
         </div>
     </div>
 </div>
-@if (Status?.HostPlayerId == PlayerId)
-{
-    <div class="fixed-bottom float-right p-4">
-        <a class="btn btn-success" @onclick="ClickStartGame">Start Game</a>
-    </div>
-}
 
 @code {
-        [Parameter]
-        public string LobbyCode { get; set; }
-        [Parameter]
-        public string PlayerId { get; set; }
+    [Parameter]
+    public string LobbyCode { get; set; }
+    [Parameter]
+    public string PlayerId { get; set; }
     public TicTacToeGameStatus Status { get; set; }
     public string Message { get; set; }
     public string MessageType { get; set; }
+    public char PlayerToken { get; set; }
     private const int TimerInterval = 1000;
     protected override async Task OnInitializedAsync()
     {
-        await Refresh();
+        await Refresh(true);
         var timer = new Timer(TimerInterval);
-        timer.Elapsed += async (obj, e) => await Refresh();
+        timer.Elapsed += async (obj, e) => await Refresh(false);
         timer.Start();
 
         await base.OnInitializedAsync();
     }
-    private async Task Refresh()
+    private async Task Refresh(bool FirstLoad)
     {
         try
         {
-            Status = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+            var newStatus = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+            if(!FirstLoad && newStatus.HostPlayerId == PlayerId)
+            {
+                Status.Players = newStatus.Players;
+                Status.Stage = newStatus.Stage;
+            }
+            else
+            {
+                Status = newStatus;
+            }
             if (Status.Stage != "Lobby")
             {
                 navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}");
@@ -131,10 +138,10 @@
     }
     private async Task ClickStartGame()
     {
-        var result = await Http.PostFromJsonAsync<string, StartGameResult>("TicTacToe/StartGame", LobbyCode);
+        var result = await Http.PostFromJsonAsync<string, StartGameResult>($"TicTacToe/StartGame?LobbyCode={LobbyCode}", LobbyCode);
         if (result.Success)
         {
-
+            navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}");
         }
     }
 }
