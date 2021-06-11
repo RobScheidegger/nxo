@@ -346,6 +346,42 @@ body {
     min-width: 14rem;
 }
 
-#infobox .border {
-    height: 100%;
-}
+    #infobox .border {
+        height: 100%;
+    }
+
+    #infobox div table {
+        min-height: 0px;
+        display: flex;
+        flex-direction: column;
+        max-height: 600px;
+    }
+
+        #infobox div table tbody {
+            overflow-y: scroll;
+        }
+
+            #infobox div table tbody::-webkit-scrollbar {
+                width: 5px;
+                background: hsl(235, 20%, 85%);
+            }
+
+            #infobox div table tbody::-webkit-scrollbar-track {
+                background: hsl(235, 20%, 90%);
+            }
+
+            #infobox div table tbody::-webkit-scrollbar-thumb {
+                background: hsl(235, 20%, 75%);
+            }
+
+            #infobox div table tbody::-webkit-scrollbar-thumb:hover {
+                background: hsl(235, 20%, 65%);
+            }
+
+            .flextr {
+                display: flex;
+            }
+
+            .flextr th {
+                flex: auto
+            }
