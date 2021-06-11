@@ -78,6 +78,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        //Dispose any old instance that we may have had before
+        Dispose();
         await Refresh();
         Timer = new Timer(new TimerCallback(async (o) => await Refresh()),null,0, TimerInterval);
 
@@ -85,7 +87,12 @@
     }
     public void Dispose()
     {
-        Timer.Dispose();
+        if (Timer != null)
+        {
+            Timer.Change(Timeout.Infinite, TimerInterval);
+            Timer.Dispose();
+        }
+        GameState = null;
     }
 
     private async void ClickCell(IEnumerable<int> Path)
