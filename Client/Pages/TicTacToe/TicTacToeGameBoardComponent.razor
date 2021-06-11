@@ -21,20 +21,29 @@
             <table class="table">
                 @foreach (var board in Board.Boards)
                 {
+                    var boardPath = Path.Append(board.Position);
+                    
                     <tr>
                         @foreach (var subBoard in board.Boards)
                         {
-                            <td><TicTacToeGameBoardComponent Board="subBoard" Path="Path.Append(board.Position).Append(subBoard.Position)" ClickCell="ClickCell" Display="Display"/></td>
+                            var subPath = boardPath.Append(subBoard.Position);
+                        <td>
+                            @if (subBoard.Dimension == 0)
+                            {
+                                <a class="@(Board.Cell != null ? "occupied-cell" : null) @(Highlighted(subPath) ? "highlighted" : null)" 
+                                   @onclick="async () => ClickCell(subPath)">@subBoard.Cell</a>
+                            }
+                            else
+                            {
+                                <TicTacToeGameBoardComponent Board="subBoard" Path="subPath" ClickCell="ClickCell" Display="Display" />
+                            }
+                        </td>
                         }
                     </tr>
                 }
             </table>
         </div>
 
-    }
-    else //0
-    {
-        <a class="@(Board.Cell != null ? "occupied-cell" : null) @(Highlighted() ? "highlighted" : null)" @onclick="async () => ClickCell(Path)">@Board.Cell</a>
     }
 }
 
@@ -47,13 +56,12 @@
     public Action<IEnumerable<int>> ClickCell { get; set; }
     [Parameter]
     public TicTacToeDisplay Display { get; set; }
-    private const int CellWidth = 30;
-    private const int CellHeight = 30;
-    private bool Highlighted()
+    private bool Highlighted(IEnumerable<int> PathOf)
     {
+
         if (Display != null && Display.HighlightedCellPath != null)
         {
-            return Path.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i);
+            return PathOf.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i);
         }
         return false;
     }

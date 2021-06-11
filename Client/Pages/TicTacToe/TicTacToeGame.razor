@@ -1,7 +1,7 @@
 ﻿@page "/tictactoe/{LobbyCode}/{PlayerId}"
 @inject HttpClient Http
 @implements IDisposable
-@using System.Timers;
+@using System.Threading;
 
 <div id="game">
     <h3>Tic Tac Toe </h3>
@@ -76,19 +76,16 @@
 
     public TicTacToeGameStatus GameState { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         await Refresh();
-        Timer = new Timer(TimerInterval);
-        Timer.Elapsed += async (obj, e) => await Refresh();
-        Timer.Start();
+        Timer = new Timer(new TimerCallback(async (o) => await Refresh()),null,0, TimerInterval);
 
         await base.OnInitializedAsync();
     }
-
     public void Dispose()
     {
-        Timer.Stop();
+        Timer.Dispose();
     }
 
     private async void ClickCell(IEnumerable<int> Path)
@@ -110,7 +107,12 @@
     {
         try
         {
-            GameState = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+            var newGameState = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+            if(newGameState.History.Count != GameState?.History.Count)
+            {
+                RegisterNewMove();
+            }
+            GameState = newGameState;
             StateHasChanged();
         }
         catch (Exception err)
@@ -124,6 +126,11 @@
         {
             HighlightedCellPath = Path
         };
+        StateHasChanged();
+    }
+    private void RegisterNewMove()
+    {
+        ErrorText = null;
         StateHasChanged();
     }
 
