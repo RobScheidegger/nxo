@@ -1,5 +1,6 @@
 ﻿@page "/tictactoe/{LobbyCode}/{PlayerId}"
 @inject HttpClient Http
+@implements IDisposable
 @using System.Timers;
 
 <div id="game">
@@ -71,17 +72,23 @@
     public string ErrorText { get; set; }
     private TicTacToeDisplay Display { get; set; }
     private const int TimerInterval = 1000;
+    private Timer Timer { get; set; }
 
     public TicTacToeGameStatus GameState { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await Refresh();
-        var timer = new Timer(TimerInterval);
-        timer.Elapsed += async (obj, e) => await Refresh();
-        timer.Start();
+        Timer = new Timer(TimerInterval);
+        Timer.Elapsed += async (obj, e) => await Refresh();
+        Timer.Start();
 
         await base.OnInitializedAsync();
+    }
+
+    public void Dispose()
+    {
+        Timer.Stop();
     }
 
     private async void ClickCell(IEnumerable<int> Path)
