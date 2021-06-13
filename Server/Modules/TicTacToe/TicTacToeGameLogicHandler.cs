@@ -8,13 +8,18 @@ namespace NXO.Server.Modules.TicTacToe
 {
     public class TicTacToeGameLogicHandler
     {
+        private Dictionary<int, IEnumerable<List<int>>> VectorCache { get; set; } 
         public TicTacToeGameLogicHandler()
         {
-             
+            VectorCache = new Dictionary<int, IEnumerable<List<int>>>();   
         }
         private IEnumerable<List<int>> GetVectorsForDimension(int dimension)
         {
-            if (dimension == 1)
+            if (VectorCache.ContainsKey(dimension))
+            {
+                return VectorCache[dimension];
+            }
+            else if (dimension == 1)
                 return new List<List<int>>{
                     new List<int>() { 1 },
                     new List<int>() { 0 },
@@ -22,7 +27,7 @@ namespace NXO.Server.Modules.TicTacToe
                 };
             else
             {
-                return GetVectorsForDimension(dimension - 1).SelectMany(vector =>
+                var result = GetVectorsForDimension(dimension - 1).SelectMany(vector =>
                     new List<List<int>>()
                     {
                         vector.Prepend(0).ToList(),
@@ -30,6 +35,8 @@ namespace NXO.Server.Modules.TicTacToe
                         vector.Prepend(-1).ToList()
                     }
                 );
+                VectorCache[dimension] = result;
+                return result; 
             }
         }
         public bool HasPlayerWon(char playerToken, TicTacToeBoard board)
@@ -39,32 +46,33 @@ namespace NXO.Server.Modules.TicTacToe
         }
         public bool HasPlayerWon(char playerToken, Array arrayBoard)
         {
-            var vectors = GetVectorsForDimension(arrayBoard.Rank);
+            var vectors = GetVectorsForDimension(arrayBoard.Rank).Where(i => !i.All(j => j == 0));
+
             var playerMoves = GetPositionFromBoardWhere(arrayBoard, (i, arr) => arr.GetValue(i) as char? == playerToken, arrayBoard.Rank);
-            var playerEdgeMoves = playerMoves.Where(move => move.Contains(0));
+            var playerEdgeMoves = playerMoves.Where(move => 
+                Enumerable.Range(0, arrayBoard.Rank).Select(i => move[i]).Any(i => i == 0));
             var playerMovesHash = new HashSet<int>(playerMoves.Select(GetHash));
             var boardSize = arrayBoard.GetLength(0);
 
             return playerEdgeMoves
                 .Any(move => vectors
-                .Where(i => !i.All(j => j == 0))
-                .Any(vector =>
+                    .Any(vector =>
+                    {
+                        var moveCheck = Enumerable.Range(0, boardSize).Select(n => MultiplyThenAdd(move, n, vector));
+
+                        return moveCheck.Select(GetHash).All(playerMovesHash.Contains);
+                    }));
+            static int[] MultiplyThenAdd(List<int> array1, int scalar, List<int> array2)
+            {
+                int[] result = new int[array1.Count];
+                for(int i = 0; i < result.Length; i++)
                 {
-                    var moveCheck = Enumerable.Range(0, boardSize).Select(n => Add(move, Multiply(n, vector)));
-
-                    return moveCheck.Select(GetHash).All(playerMovesHash.Contains);
-                }));
-
-            List<int> Add(IEnumerable<int> firstArray, IEnumerable<int> secondArray)
-            {
-                return firstArray.Zip(secondArray, (x, y) => x + y).ToList();
-            }
-
-            List<int> Multiply(int scalar, IEnumerable<int> array)
-            {
-                return array.Select(i => i * scalar).ToList();
+                    result[i] = array1[i] +  scalar * array2[i];
+                }
+                return result;
             }
         }
+
         public Array CloneBoard(Array originalBoard)
         {
             var output = Array.CreateInstance(typeof(char?),
@@ -80,7 +88,6 @@ namespace NXO.Server.Modules.TicTacToe
             ParseBoardTree(ref output, board, Enumerable.Empty<int>());
             return output;
         }
-
         public void ParseBoardTree(ref Array array, TicTacToeBoard board, IEnumerable<int> path)
         {
             if (board.Dimension == 0)

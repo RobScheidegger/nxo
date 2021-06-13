@@ -22,25 +22,25 @@ namespace NXO.Server.Modules.TicTacToe
 
         public Task<TicTacToeMove> GetNextMove(TicTacToeGameStatus GameStatus)
         {
-            List<int> depthReached = new();
-            List<int> scores = new();
-            List<List<int>> moves = new();
             TicTacToeBoard board = GameStatus.Board;
-            Array a = logic.GetArrayFromBoard(board);
+            Array startingBoard = logic.GetArrayFromBoard(board);
+
             TicTacToePlayer currentPlayer = GameStatus.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First();
             TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
-            var available_moves = logic.GetPositionFromBoardWhere(a, (path, arr) => arr.GetValue(path) is null, board.Dimension);
-            bool hasMoved = logic.GetPositionFromBoardWhere(a, (path, arr) => arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension).Any();
+
+            var available_moves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) is null, board.Dimension);
+            bool hasMoved = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension).Any();
             if (!available_moves.Any())
             {
                 return null;
             }
-            foreach (var move in available_moves)
+
+            List<MinimaxResult> minimaxMoves = available_moves.Select(i => new MinimaxResult()
             {
-                moves.Add(move);
-                scores.Add(-1000);
-                depthReached.Add(0);
-            }
+                DepthReached = 0,
+                Score = -1000,
+                Move = i
+            }).ToList();
 
             var cancelToken = new CancellationTokenSource();
             var task = Task.Run(() =>
@@ -48,12 +48,12 @@ namespace NXO.Server.Modules.TicTacToe
                 var forcedMove = false;
                 for (int d = 0; d < defaultMaxDepth + 1; d++)
                 {
-                    for (int i = 0; i < moves.Count; i++)
+                    foreach(var move in minimaxMoves)
                     {
                         for (int j = 0; j < d + 1; j++)
                         {
-                            scores[i] = IterativeDeepening(a, 0, j, GameStatus, currentPlayer, defaultAlpha, defaultBeta, moves[i]);
-                            depthReached[i] = j;
+                            move.Score = IterativeDeepening(startingBoard, 0, j, GameStatus, currentPlayer, defaultAlpha, defaultBeta, move.Move);
+                            move.DepthReached = j;
                             if (cancelToken.Token.IsCancellationRequested || forcedMove)
                             {
                                 break;
@@ -64,9 +64,8 @@ namespace NXO.Server.Modules.TicTacToe
                             break;
                         }
                     }
-                    forcedMove = scores.Select((x, i) => new { Index = i, Value = x })
-                    .Where(x => x.Value == scores.Max())
-                    .Select(x => x.Index).Count() == 1;
+                    var maxScore = minimaxMoves.Max(i => i.Score);
+                    forcedMove = minimaxMoves.Where(i => i.Score == maxScore).Count() == 1;
                     if (cancelToken.Token.IsCancellationRequested || forcedMove || !hasMoved)
                     {
                         break;
@@ -80,23 +79,21 @@ namespace NXO.Server.Modules.TicTacToe
                 cancelToken.Cancel();
             }
 
-            /*foreach (var move in available_moves)
+            var maxScore = minimaxMoves.Max(i => i.Score);
+            var maxScoreCandidates = minimaxMoves.Where(i => i.Score == maxScore);
+            MinimaxResult finalResult;
+            if (maxScoreCandidates.Count() == 0)
+                finalResult = minimaxMoves.First();
+            else
             {
-                moves.Add(move);
-                scores.Add(Minimax(a, 0, GameStatus, currentPlayer, defaultAlpha, defaultBeta, move));
-            }*/
-
-
-            var searchIndex = random.Next(0, scores.LastIndexOf(scores.Max()));
-            if (searchIndex == -1)
-            {
-                searchIndex = 0;
+                var randIndex = random.Next(0, maxScoreCandidates.Count());
+                finalResult = maxScoreCandidates.ElementAt(randIndex);
             }
             TicTacToeMove bestMove = new()
             {
                 PlayerId = GameStatus.CurrentPlayerId,
                 LobbyCode = GameStatus.LobbyCode,
-                Path = moves[scores.IndexOf(scores.Max(), searchIndex)]
+                Path = finalResult.Move
             };
             return Task.FromResult(bestMove);
         }
@@ -223,5 +220,11 @@ namespace NXO.Server.Modules.TicTacToe
 
             return bestVal;
         }
+    }
+    public class MinimaxResult
+    {
+        public int DepthReached { get; set; }
+        public List<int> Move { get; set; }
+        public int Score { get; set; }
     }
 }
