@@ -14,7 +14,7 @@ namespace NXO.Server.Modules.TicTacToe
         {
             VectorCache = new Dictionary<int, IEnumerable<List<int>>>();   
         }
-        private IEnumerable<List<int>> GetVectorsForDimension(int dimension, bool subCall = false)
+        public IEnumerable<List<int>> GetVectorsForDimension(int dimension, bool subCall = false)
         {
             if (VectorCache.ContainsKey(dimension))
             {
@@ -38,24 +38,30 @@ namespace NXO.Server.Modules.TicTacToe
                 );
                 if(!subCall)
                 {
-                    //Sanitize and remove duplicates
+                    //Sanitize and remove linearly dependent terms
                     var resultList = result.ToList();
+
                     int i = 0;
                     while(i < resultList.Count)
                     {
                         var value = resultList[i];
-                        var hash = GetHash(value);
+                        var negative = value.Select(i => -i).ToList();
+                        var negativeHash = GetHash(negative);
+                        var foundNegative = resultList.Where(q => GetHash(q) == negativeHash).LastOrDefault();
                         if (value.All(q => q == 0))
                         {
                             resultList.RemoveAt(i);
                         }
-                        else if(resultList.LastIndexOf(resultList.Where(q => GetHash(q) == hash).Last()) != i)
+                        /*
+                        else if(foundNegative != null)
                         {
                             resultList.RemoveAt(i);
                         }
+                        */
                         else
                             i++;
                     }
+                    result = resultList;
                     VectorCache[dimension] = result;
                 }
                 return result; 
@@ -76,25 +82,27 @@ namespace NXO.Server.Modules.TicTacToe
             var vectors = GetVectorsForDimension(dimension);
             var playerEdgeMoves = playerMoves.Where(move =>
                 Enumerable.Range(0, dimension).Select(i => move[i]).Any(i => i == 0));
-            var playerMovesHash = new HashSet<int>(playerMoves.Select(GetHash));
+            var playerMovesHash = HashMoves(playerMoves);
 
             return playerEdgeMoves
                 .Any(move => vectors
                     .Any(vector =>
                     {
-                        var moveCheck = Enumerable.Range(1, boardSize).Select(n => MultiplyThenAdd(move, n, vector));
+                        var moveCheck = Enumerable.Range(0, boardSize).Select(n => MultiplyThenAdd(move, n, vector));
 
-                        return moveCheck.Select(GetHash).All(playerMovesHash.Contains);
+                        var hashes = moveCheck.Select(GetHash);
+
+                        return hashes.All(playerMovesHash.Contains);
                     }));
-            static List<int> MultiplyThenAdd(List<int> array1, int scalar, List<int> array2)
+        }
+        public List<int> MultiplyThenAdd(List<int> array1, int scalar, List<int> array2)
+        {
+            List<int> result = new(array1.Count);
+            for (int i = 0; i < array1.Count; i++)
             {
-                List<int> result = new(array1.Count);
-                for (int i = 0; i < result.Count; i++)
-                {
-                    result[i] += scalar * array2[i];
-                }
-                return result;
+                result.Add(array1[i] + scalar * array2[i]);
             }
+            return result;
         }
 
         public Array CloneBoard(Array originalBoard)
@@ -175,6 +183,16 @@ namespace NXO.Server.Modules.TicTacToe
                       .Repeat(bas, exp)
                       .Aggregate(1, (a, b) => a * b);
             }
+        }
+
+        public bool InBounds(List<int> vector, int boardSize)
+        {
+            return vector.All(i => i >= 0 && i < boardSize);
+        }
+
+        public HashSet<int> HashMoves(IEnumerable<List<int>> playerMoves)
+        {
+            return new HashSet<int>(playerMoves.Select(GetHash));
         }
     }
 }

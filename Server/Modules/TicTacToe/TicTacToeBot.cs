@@ -15,6 +15,7 @@ namespace NXO.Server.Modules.TicTacToe
         private const int defaultBeta = 1000;
         private const int defaultMaxDepth = 5;
         private const int timeout = 30;
+        private const int winningScore = 100;
 
         public TicTacToeBot(TicTacToeGameLogicHandler logic)
         {
@@ -186,30 +187,33 @@ namespace NXO.Server.Modules.TicTacToe
             }
             return bestVal;
         }
-        public int IterativeDeepening(ref List<TrackedMove> availableMoves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int depth, int maxDepth, TicTacToeGameStatus gameStatus, TicTacToePlayer currentPlayer, int alpha, int beta, TrackedMove firstMove = null)
+        public int IterativeDeepening(ref List<TrackedMove> availableMoves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, 
+            int depth, int maxDepth, TicTacToeGameStatus gameStatus, TicTacToePlayer currentPlayer, int alpha, int beta, TrackedMove firstMove = null)
         {
-            int bestVal = currentPlayer.Bot ? defaultAlpha : defaultBeta;
+            bool maximizing = currentPlayer.PlayerId == gameStatus.CurrentPlayerId;
+
+            int bestVal = maximizing ? defaultAlpha : defaultBeta;
             char currentToken = currentPlayer.Token;
             TicTacToePlayer oppositionPlayer = gameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
-            int minmaxInt = currentPlayer.Bot ? 10 : -10;
+            int minmaxInt = maximizing ? winningScore : -winningScore;
             int score = logic.HasPlayerWon(currentPlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize)
                 ? minmaxInt : (logic.HasPlayerWon(oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize) ? (minmaxInt * -1) : 0);
 
-            if (score == 10)
+            if (score == winningScore)
             {
                 return score - depth;
             }
-            else if (score == -10)
+            else if (score == -winningScore)
             {
                 return score + depth;
             }
-            if (depth > maxDepth)
+            else if (depth >= maxDepth)
             {
-                return score;
+                return (maximizing ? 1 : -1) * StaticEvaluationScore(currentPlayerMoves, oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize);
             }
             else 
             {
-                if (currentPlayer.Bot) // MAX
+                if (maximizing) // MAX
                 {
                     IEnumerable<TrackedMove> move_enumerable = firstMove == null ? availableMoves.Where(i => i.Available) : new List<TrackedMove> { firstMove };
                     foreach (var move in move_enumerable)
@@ -262,6 +266,42 @@ namespace NXO.Server.Modules.TicTacToe
             }
 
             return bestVal;
+        }
+
+        private int StaticEvaluationScore(IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int dimension, int boardSize)
+        {
+            var currentPlayerMovesHash = logic.HashMoves(currentPlayerMoves);
+            var oppositePlayerMovesHash = logic.HashMoves(oppositePlayerMoves);
+            var vectors = logic.GetVectorsForDimension(dimension);
+
+
+            //From each move for the current player, check each vector to see if there is a winning path
+            int playerPaths = currentPlayerMoves.Select(move =>
+            {
+                return vectors.Count(vector =>
+                {
+                    var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(move, n, vector));
+
+                    var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
+
+                    return !hashes.Any(oppositePlayerMovesHash.Contains) && (hashes.Count() == boardSize);
+                });
+            }).Sum();
+
+            //From each move for the opposite player, check if there is a winning path
+            int oppositePaths = oppositePlayerMoves.Select(move =>
+            {
+                return vectors.Count(vector =>
+                {
+                    var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(move, n, vector));
+
+                    var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
+
+                    return !hashes.Any(currentPlayerMovesHash.Contains) && (hashes.Count() == boardSize);
+                });
+            }).Sum();
+
+            return playerPaths - oppositePaths;
         }
     }
     public class MinimaxResult

@@ -175,7 +175,7 @@ namespace NXO.Server.Modules
             if (game.Players.Where(p => p.PlayerId == game.CurrentPlayerId).First().Bot)
             {
                 var botMove = await bot.GetNextMove(game);
-                await PerformMoveAsync(botMove);
+                Task.Run(async () => await PerformMoveAsync(botMove));
             }
             return new StartGameResult() { Success = true };
         }
