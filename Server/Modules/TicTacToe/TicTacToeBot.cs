@@ -27,7 +27,12 @@ namespace NXO.Server.Modules.TicTacToe
             Array startingBoard = logic.GetArrayFromBoard(board);
 
             TicTacToePlayer currentPlayer = GameStatus.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First();
-            TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+            TicTacToePlayer oppositePlayer = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+
+            var currentPlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => 
+                arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension);
+            var oppositePlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
+                arr.GetValue(path) as char? == oppositePlayer.Token, board.Dimension);
 
             var available_moves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) is null, board.Dimension);
             bool hasMoved = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension).Any();
@@ -36,10 +41,17 @@ namespace NXO.Server.Modules.TicTacToe
                 return null;
             }
 
-            List<MinimaxResult> minimaxMoves = available_moves.Select(i => new MinimaxResult()
+            List<MinimaxResult> minimaxMoves = available_moves.Select((v, i) => new MinimaxResult()
             {
                 DepthReached = 0,
                 Score = -1000,
+                Move = v,
+                Index = i
+            }).ToList();
+
+            var trackedAvailableMoves = available_moves.Select(i => new TrackedMove()
+            {
+                Available = true,
                 Move = i
             }).ToList();
 
@@ -53,7 +65,17 @@ namespace NXO.Server.Modules.TicTacToe
                     {
                         for (int j = 0; j < d + 1; j++)
                         {
-                            move.Score = IterativeDeepening(startingBoard, 0, j, GameStatus, currentPlayer, defaultAlpha, defaultBeta, move.Move);
+                            move.Score = IterativeDeepening(
+                                availableMoves: ref trackedAvailableMoves,
+                                currentPlayerMoves: oppositePlayerMoves,
+                                oppositePlayerMoves: currentPlayerMoves,
+                                depth: 0,
+                                maxDepth: j,
+                                gameStatus: GameStatus,
+                                currentPlayer: currentPlayer,
+                                alpha: defaultAlpha,
+                                beta: defaultBeta,
+                                firstMove: trackedAvailableMoves[move.Index]);
                             move.DepthReached = j;
                             if (cancelToken.Token.IsCancellationRequested || forcedMove)
                             {
@@ -164,13 +186,14 @@ namespace NXO.Server.Modules.TicTacToe
             }
             return bestVal;
         }
-        public int IterativeDeepening(Array board, int depth, int maxDepth, TicTacToeGameStatus GameStatus, TicTacToePlayer currentPlayer, int alpha, int beta, List<int> firstMove = null)
+        public int IterativeDeepening(ref List<TrackedMove> availableMoves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int depth, int maxDepth, TicTacToeGameStatus gameStatus, TicTacToePlayer currentPlayer, int alpha, int beta, TrackedMove firstMove = null)
         {
             int bestVal = currentPlayer.Bot ? defaultAlpha : defaultBeta;
             char currentToken = currentPlayer.Token;
-            TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+            TicTacToePlayer oppositionPlayer = gameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
             int minmaxInt = currentPlayer.Bot ? 10 : -10;
-            int score = logic.HasPlayerWon(currentToken, board) ? minmaxInt : logic.HasPlayerWon(opp.Token, board) ? (minmaxInt * -1) : 0;
+            int score = logic.HasPlayerWon(currentPlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize)
+                ? minmaxInt : (logic.HasPlayerWon(oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize) ? (minmaxInt * -1) : 0);
 
             if (score == 10)
             {
@@ -183,19 +206,28 @@ namespace NXO.Server.Modules.TicTacToe
             if (depth > maxDepth)
             {
                 return score;
-            } else 
+            }
+            else 
             {
-                var available_moves = firstMove == null ? logic.GetPositionFromBoardWhere(board, (path, arr) => arr.GetValue(path) is null, board.Rank) : new List<List<int>>() { firstMove };
                 if (currentPlayer.Bot) // MAX
                 {
-                    foreach (var move in available_moves)
+                    IEnumerable<TrackedMove> move_enumerable = firstMove == null ? availableMoves.Where(i => i.Available) : new List<TrackedMove> { firstMove };
+                    foreach (var move in move_enumerable)
                     {
-
-                        Array testBoard = logic.CloneBoard(board);
-                        testBoard.SetValue(currentToken, move.ToArray());
-                        bestVal = Math.Max(bestVal, IterativeDeepening(testBoard, depth + 1, maxDepth, GameStatus, opp, alpha, beta));
+                        move.Available = false;
+                        bestVal = Math.Max(bestVal, IterativeDeepening(
+                            availableMoves: ref availableMoves, 
+                            currentPlayerMoves: oppositePlayerMoves,
+                            oppositePlayerMoves: currentPlayerMoves.Append(move.Move),
+                            depth: depth + 1, 
+                            maxDepth: maxDepth,
+                            gameStatus: gameStatus, 
+                            currentPlayer: oppositionPlayer, 
+                            alpha: alpha, 
+                            beta: beta));
 
                         alpha = Math.Max(alpha, bestVal);
+                        move.Available = true;
                         if (beta <= alpha)
                         {
                             break;
@@ -205,12 +237,22 @@ namespace NXO.Server.Modules.TicTacToe
                 }
                 else // MIN
                 {
-                    foreach (var move in available_moves)
+                    IEnumerable<TrackedMove> move_enumerable = firstMove == null ? availableMoves.Where(i => i.Available) : new List<TrackedMove> { firstMove };
+                    foreach (var move in move_enumerable)
                     {
-                        Array testBoard = logic.CloneBoard(board);
-                        testBoard.SetValue(currentToken, move.ToArray());
-                        bestVal = Math.Min(bestVal, IterativeDeepening(testBoard, depth + 1, maxDepth, GameStatus, opp, alpha, beta));
+                        move.Available = false;
+                        bestVal = Math.Min(bestVal, IterativeDeepening(
+                            availableMoves: ref availableMoves,
+                            currentPlayerMoves: oppositePlayerMoves,
+                            oppositePlayerMoves: currentPlayerMoves.Append(move.Move),
+                            depth: depth + 1,
+                            maxDepth: maxDepth,
+                            gameStatus: gameStatus,
+                            currentPlayer: oppositionPlayer,
+                            alpha: alpha,
+                            beta: beta));
                         beta = Math.Min(beta, bestVal);
+                        move.Available = true;
                         if (beta <= alpha)
                         {
                             break;
@@ -227,5 +269,11 @@ namespace NXO.Server.Modules.TicTacToe
         public int DepthReached { get; set; }
         public List<int> Move { get; set; }
         public int Score { get; set; }
+        public int Index { get; set; }
+    }
+    public class TrackedMove
+    {
+        public bool Available { get; set; }
+        public List<int> Move { get; set; }
     }
 }

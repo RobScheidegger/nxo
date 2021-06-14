@@ -8,12 +8,13 @@ namespace NXO.Server.Modules.TicTacToe
 {
     public class TicTacToeGameLogicHandler
     {
+        private readonly int[] Primes = { 2,3,5,7,11,13 };
         private Dictionary<int, IEnumerable<List<int>>> VectorCache { get; set; } 
         public TicTacToeGameLogicHandler()
         {
             VectorCache = new Dictionary<int, IEnumerable<List<int>>>();   
         }
-        private IEnumerable<List<int>> GetVectorsForDimension(int dimension)
+        private IEnumerable<List<int>> GetVectorsForDimension(int dimension, bool subCall = false)
         {
             if (VectorCache.ContainsKey(dimension))
             {
@@ -27,7 +28,7 @@ namespace NXO.Server.Modules.TicTacToe
                 };
             else
             {
-                var result = GetVectorsForDimension(dimension - 1).SelectMany(vector =>
+                var result = GetVectorsForDimension(dimension - 1, true).SelectMany(vector =>
                     new List<List<int>>()
                     {
                         vector.Prepend(0).ToList(),
@@ -35,7 +36,28 @@ namespace NXO.Server.Modules.TicTacToe
                         vector.Prepend(-1).ToList()
                     }
                 );
-                VectorCache[dimension] = result;
+                if(!subCall)
+                {
+                    //Sanitize and remove duplicates
+                    var resultList = result.ToList();
+                    int i = 0;
+                    while(i < resultList.Count)
+                    {
+                        var value = resultList[i];
+                        var hash = GetHash(value);
+                        if (value.All(q => q == 0))
+                        {
+                            resultList.RemoveAt(i);
+                        }
+                        else if(resultList.LastIndexOf(resultList.Where(q => GetHash(q) == hash).Last()) != i)
+                        {
+                            resultList.RemoveAt(i);
+                        }
+                        else
+                            i++;
+                    }
+                    VectorCache[dimension] = result;
+                }
                 return result; 
             }
         }
@@ -46,28 +68,30 @@ namespace NXO.Server.Modules.TicTacToe
         }
         public bool HasPlayerWon(char playerToken, Array arrayBoard)
         {
-            var vectors = GetVectorsForDimension(arrayBoard.Rank).Where(i => !i.All(j => j == 0));
-
             var playerMoves = GetPositionFromBoardWhere(arrayBoard, (i, arr) => arr.GetValue(i) as char? == playerToken, arrayBoard.Rank);
-            var playerEdgeMoves = playerMoves.Where(move => 
-                Enumerable.Range(0, arrayBoard.Rank).Select(i => move[i]).Any(i => i == 0));
+            return HasPlayerWon(playerMoves, arrayBoard.Rank, arrayBoard.GetLength(0));   
+        }
+        public bool HasPlayerWon(IEnumerable<List<int>> playerMoves, int dimension, int boardSize)
+        {
+            var vectors = GetVectorsForDimension(dimension);
+            var playerEdgeMoves = playerMoves.Where(move =>
+                Enumerable.Range(0, dimension).Select(i => move[i]).Any(i => i == 0));
             var playerMovesHash = new HashSet<int>(playerMoves.Select(GetHash));
-            var boardSize = arrayBoard.GetLength(0);
 
             return playerEdgeMoves
                 .Any(move => vectors
                     .Any(vector =>
                     {
-                        var moveCheck = Enumerable.Range(0, boardSize).Select(n => MultiplyThenAdd(move, n, vector));
+                        var moveCheck = Enumerable.Range(1, boardSize).Select(n => MultiplyThenAdd(move, n, vector));
 
                         return moveCheck.Select(GetHash).All(playerMovesHash.Contains);
                     }));
-            static int[] MultiplyThenAdd(List<int> array1, int scalar, List<int> array2)
+            static List<int> MultiplyThenAdd(List<int> array1, int scalar, List<int> array2)
             {
-                int[] result = new int[array1.Count];
-                for(int i = 0; i < result.Length; i++)
+                List<int> result = new(array1.Count);
+                for (int i = 0; i < result.Count; i++)
                 {
-                    result[i] = array1[i] +  scalar * array2[i];
+                    result[i] += scalar * array2[i];
                 }
                 return result;
             }
@@ -137,9 +161,20 @@ namespace NXO.Server.Modules.TicTacToe
             return !available_moves.Any();
         }
 
-        public int GetHash(IEnumerable<int> array)
+        public int GetHash(List<int> array)
         {
-            return array.Aggregate(0, (i, j) => HashCode.Combine(i, j));
+            int sum = 1;
+            for(int i = 0; i < array.Count; i++)
+            {
+                sum *= Pow(Primes[i], array[i] + 1); 
+            }
+            return sum;
+            static int Pow(int bas, int exp)
+            {
+                return Enumerable
+                      .Repeat(bas, exp)
+                      .Aggregate(1, (a, b) => a * b);
+            }
         }
     }
 }
