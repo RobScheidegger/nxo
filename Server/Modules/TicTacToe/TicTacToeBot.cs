@@ -13,7 +13,7 @@ namespace NXO.Server.Modules.TicTacToe
         private readonly Random random = new();
         private const int defaultAlpha = -1000;
         private const int defaultBeta = 1000;
-        private const int defaultMaxDepth = 5;
+        private const int defaultMaxDepth = 7;
         private const int timeout = 30;
         private const int winningScore = 100;
 
@@ -90,7 +90,7 @@ namespace NXO.Server.Modules.TicTacToe
                     }
                     var maxScore = minimaxMoves.Max(i => i.Score);
                     forcedMove = minimaxMoves.Where(i => i.Score == maxScore).Count() == 1;
-                    if (cancelToken.Token.IsCancellationRequested || forcedMove || !hasMoved)
+                    if (cancelToken.Token.IsCancellationRequested || forcedMove)
                     {
                         break;
                     }
@@ -288,6 +288,7 @@ namespace NXO.Server.Modules.TicTacToe
                 });
             }).Sum();
 
+            int count = 0;
             //From each move for the opposite player, check if there is a winning path
             int oppositePaths = oppositePlayerMoves.Select(move =>
             {
@@ -297,10 +298,14 @@ namespace NXO.Server.Modules.TicTacToe
 
                     var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
 
+                    count += hashes.Where(oppositePlayerMovesHash.Contains).Count() >= boardSize - 1 && !hashes.Any(currentPlayerMovesHash.Contains) ? 1 : 0;
                     return !hashes.Any(currentPlayerMovesHash.Contains) && (hashes.Count() == boardSize);
                 });
             }).Sum();
-
+            if (count >= 2)
+            {
+                oppositePaths += 100;
+            }
             return playerPaths - oppositePaths;
         }
     }
