@@ -11,9 +11,10 @@ namespace NXO.Server.Modules.TicTacToe
     {
         private readonly TicTacToeGameLogicHandler logic;
         private readonly Random random = new();
-        private readonly int defaultAlpha = -1000;
-        private readonly int defaultBeta = 1000;
-        private readonly int defaultMaxDepth = 5;
+        private const int defaultAlpha = -1000;
+        private const int defaultBeta = 1000;
+        private const int defaultMaxDepth = 5;
+        private const int timeout = 30;
 
         public TicTacToeBot(TicTacToeGameLogicHandler logic)
         {
@@ -73,7 +74,7 @@ namespace NXO.Server.Modules.TicTacToe
                 }
             }, cancelToken.Token);
 
-            bool isCompletedSuccessfully = task.Wait(TimeSpan.FromSeconds(30));
+            bool isCompletedSuccessfully = task.Wait(TimeSpan.FromSeconds(timeout));
             if (!isCompletedSuccessfully)
             {
                 cancelToken.Cancel();
