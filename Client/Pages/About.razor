@@ -2,9 +2,25 @@
 
 <div class="container">
     <h3>About NXO</h3>
+
+    <div>
+        <h3>Rules</h3>
+    </div>
+    <div>
+        <h3>Rules (Mathematical)</h3>
+        <p>
+            The win conditions are much easier to enunciate mathematically, as if we let \(V\) be the set of
+        </p>
+        
+    </div>
 </div>
 
 
 @code {
-    
+    [Inject] private IJSRuntime jsRuntime { get; set; }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        jsRuntime.InvokeVoidAsync("window.mathJaxBlazor.typesetPromise");
+        return base.OnAfterRenderAsync(firstRender);
+    }
 }
