@@ -30,7 +30,7 @@
                         <td>
                             @if (subBoard.Dimension == 0)
                             {
-                                <a class="@(Board.Cell != null ? "occupied-cell" : null) @(Highlighted(subPath) ? "highlighted" : null)" 
+                                <a class="@(subBoard.Cell != null ? "occupied-cell" : null) @(Highlighted(subPath) ? "highlighted" : null)" 
                                    @onclick="async () => ClickCell(subPath)">@subBoard.Cell</a>
                             }
                             else
