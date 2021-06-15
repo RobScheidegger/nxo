@@ -81,6 +81,7 @@
     {
         //Dispose any old instance that we may have had before
         Dispose();
+        Display = new TicTacToeDisplay();
         await Refresh();
         Timer = new Timer(new TimerCallback(async (o) => await Refresh()),null,0, TimerInterval);
 
@@ -130,10 +131,7 @@
     }
     private void Highlight(IEnumerable<int> Path)
     {
-        Display = new TicTacToeDisplay()
-        {
-            HighlightedCellPath = Path
-        };
+        Display.HighlightedCellPath = Path;
         StateHasChanged();
     }
     private void RegisterNewMove()
