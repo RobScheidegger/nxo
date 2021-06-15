@@ -195,6 +195,11 @@ body {
     min-width: fit-content;
 }
 
+a {
+    text-decoration: none;
+    color: initial;
+}
+
 .header {
     display: flex;
     flex-direction: row;
@@ -336,8 +341,29 @@ body {
         background-color: hsl(235, 20%, 100%) !important;
     }
 
+    @keyframes lastmove {
+        from {
+            background-color: hsl(120, 100%, 70%);
+        }
+
+        to {
+            background-color: inherit;
+        }
+    }
+
+    #board .lastmove {
+        animation-name: lastmove;
+        animation-duration: 1s;
+    }
+
+    @keyframes highlight {
+        from {background-color: hsl(120, 100%, 75%);}
+        to {background-color: hsl(120, 100%, 95%);}
+    }
+
     #board .highlighted {
-        background-color: lightgreen !important;
+        animation: 1s linear 0s highlight;
+        background-color: hsl(120, 100%, 95%);
     }
 
 #infobox {
@@ -359,6 +385,9 @@ body {
 
         #infobox div table tbody {
             overflow-y: scroll;
+            scrollbar-track-color: hsl(235, 20%, 90%);
+            scrollbar-face-color: hsl(235, 20%, 75%);
+            scrollbar-width: thin;
         }
 
             #infobox div table tbody::-webkit-scrollbar {
@@ -380,8 +409,15 @@ body {
 
             .flextr {
                 display: flex;
+                justify-content: space-between;
             }
 
-            .flextr th {
-                flex: auto
+            .flextr * {
+                flex: 1;
+                display: flex;
+                align-items: baseline;
+            }
+
+            .flextr a {
+                justify-content: center;
             }
