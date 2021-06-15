@@ -30,7 +30,7 @@
                         <td>
                             @if (subBoard.Dimension == 0)
                             {
-                                <a class="@(subBoard.Cell != null ? "occupied-cell" : null) @(Highlighted(subPath) ? "highlighted" : null)" 
+                                <a id="@(Highlighted(subPath) ? "highlighted" : null)" class="@(subBoard.Cell != null ? "occupied-cell" : null)" 
                                    @onclick="async () => ClickCell(subPath)">@subBoard.Cell</a>
                             }
                             else
@@ -61,8 +61,16 @@
 
         if (Display != null && Display.HighlightedCellPath != null)
         {
-            return PathOf.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i) ||
-                PathOf.Zip(Display.LastMove, (i, j) => i == j).All(i => i);
+            return PathOf.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i);
+        }
+        return false;
+    }
+    private bool LastMove(IEnumerable<int> PathOf)
+    {
+
+        if (Display != null && Display.LastMove != null)
+        {
+            return PathOf.Zip(Display.LastMove, (i, j) => i == j).All(i => i);
         }
         return false;
     }

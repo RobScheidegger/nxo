@@ -298,10 +298,6 @@ a {
     background-color: hsl(235, 20%, 96%);
 }
 
-    #board * {
-        
-    }
-
     #board .board-container {
         margin: 0.25rem;
         padding: 0rem;
@@ -331,39 +327,36 @@ a {
         text-decoration: none;
     }
 
-    #board a:hover {
+    /*Changed below tag to .board-container to allow ids to override*/
+
+    .board-container a:hover {
         background-color: hsl(235, 20%, 97.5%);
         cursor: pointer;
     }
 
     #board .occupied-cell {
         cursor: default !important;
-        background-color: hsl(235, 20%, 100%) !important;
+        background-color: hsl(235, 20%, 100%);
     }
 
-    @keyframes lastmove {
+    @keyframes highlight {
         from {
-            background-color: hsl(120, 100%, 70%);
+            background-color: hsl(120, 100%, 75%);
         }
 
         to {
-            background-color: inherit;
+            background-color: hsl(120, 100%, 100%);
         }
     }
 
     #board .lastmove {
-        animation-name: lastmove;
-        animation-duration: 1s;
+        animation: 1s linear 0.2s highlight;
+        background-color: hsl(120, 100%, 100%);
     }
 
-    @keyframes highlight {
-        from {background-color: hsl(120, 100%, 75%);}
-        to {background-color: hsl(120, 100%, 95%);}
-    }
-
-    #board .highlighted {
-        animation: 1s linear 0s highlight;
-        background-color: hsl(120, 100%, 95%);
+    #board #highlighted {
+        animation: 3s linear 0s highlight;
+        background-color: hsl(120, 100%, 100%);
     }
 
 #infobox {
