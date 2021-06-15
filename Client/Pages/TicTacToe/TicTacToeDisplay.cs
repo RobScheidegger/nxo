@@ -8,5 +8,6 @@ namespace NXO.Client.Pages.TicTacToe
     public class TicTacToeDisplay
     {
         public IEnumerable<int> HighlightedCellPath { get; set; }
+        public IEnumerable<int> LastMove { get; set; }
     }
 }
