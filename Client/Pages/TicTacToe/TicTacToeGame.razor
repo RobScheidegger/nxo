@@ -48,8 +48,7 @@
                             @foreach(var history in GameState.History)
                             {
                             <tr class="flextr">
-                                <td>@history.PlayerName</td>
-                                <td>@history.Message</td>
+                                <td>@history.PlayerName played at @string.Join(",", history.MovePath.Select(i => i + 1))</td>
                                 <td>
                                     <a class="btn btn-primary btn-sm" @onclick="() => Highlight(history.MovePath)">
                                         Find
@@ -81,6 +80,7 @@
     {
         //Dispose any old instance that we may have had before
         Dispose();
+        Display = new TicTacToeDisplay();
         await Refresh();
         Timer = new Timer(new TimerCallback(async (o) => await Refresh()),null,0, TimerInterval);
 
@@ -113,27 +113,18 @@
     }
     private async Task Refresh()
     {
-        try
+        var newGameState = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
+        if(newGameState.History.Count != GameState?.History.Count)
         {
-            var newGameState = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
-            if(newGameState.History.Count != GameState?.History.Count)
-            {
-                RegisterNewMove();
-            }
-            GameState = newGameState;
-            StateHasChanged();
+            RegisterNewMove();
+            Display.LastMove = newGameState.History.LastOrDefault()?.MovePath;
         }
-        catch (Exception err)
-        {
-            Console.WriteLine("ERROR" + err.Message);
-        }
+        GameState = newGameState;
+        StateHasChanged();
     }
     private void Highlight(IEnumerable<int> Path)
     {
-        Display = new TicTacToeDisplay()
-        {
-            HighlightedCellPath = Path
-        };
+        Display.HighlightedCellPath = Path;
         StateHasChanged();
     }
     private void RegisterNewMove()

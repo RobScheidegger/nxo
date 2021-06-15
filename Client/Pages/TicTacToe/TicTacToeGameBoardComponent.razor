@@ -7,7 +7,7 @@
                 @foreach (var board in Board.Boards)
                 {
                     <tr>
-                        <td><TicTacToeGameBoardComponent Board="board" Path="Path.Append(board.Position)" ClickCell="ClickCell" /></td>
+                        <td><TicTacToeGameBoardComponent Board="board" Path="Path.Append(board.Position)" ClickCell="ClickCell" Display="Display" /></td>
                     </tr>
 
                 }
@@ -30,7 +30,7 @@
                         <td>
                             @if (subBoard.Dimension == 0)
                             {
-                                <a class="@(Board.Cell != null ? "occupied-cell" : null) @(Highlighted(subPath) ? "highlighted" : null)" 
+                                <a class="@(subBoard.Cell != null ? "occupied-cell" : null) @(Highlighted(subPath) ? "highlighted" : null)" 
                                    @onclick="async () => ClickCell(subPath)">@subBoard.Cell</a>
                             }
                             else
@@ -61,7 +61,8 @@
 
         if (Display != null && Display.HighlightedCellPath != null)
         {
-            return PathOf.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i);
+            return PathOf.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i) ||
+                PathOf.Zip(Display.LastMove, (i, j) => i == j).All(i => i);
         }
         return false;
     }

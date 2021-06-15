@@ -86,16 +86,14 @@ namespace NXO.Server.Modules
                 var currentPlayer = gameStatus.Players.ElementAt(currentPlayerIndex);
                 var nextPlayerIndex = (currentPlayerIndex + 1) % gameStatus.Players.Count();
                 var nextPlayer = gameStatus.Players.ElementAt(nextPlayerIndex);
-                var moveMessage = $"{currentPlayer.Nickname} placed a '{currentPlayer.Token}' at '{string.Join(',', properMove.Path.Select(i => i + 1))}'";
 
                 await gameStatusRepository.Update(move.LobbyCode, g =>
                 {
                     g.Board.Place(currentPlayer.Token, properMove.Path);
                     g.CurrentPlayerId = nextPlayer.PlayerId;
                     g.CurrentPlayerName = nextPlayer.Nickname;
-                    g.History.Add(new TicTacToeGameHistoryEntry()
+                    g.History.Add(new TicTacToeMoveHistory()
                     {
-                        Message = moveMessage,
                         PlayerName = currentPlayer.Nickname,
                         MovePath = properMove.Path
                     });
@@ -114,8 +112,7 @@ namespace NXO.Server.Modules
                 }
                 return new MoveResult()
                 {
-                    Success = true,
-                    Message = moveMessage
+                    Success = true
                 };
             }
             else
@@ -168,7 +165,7 @@ namespace NXO.Server.Modules
                 g.CurrentPlayerId = startingPlayer.PlayerId;
                 g.CurrentPlayerName = startingPlayer.Nickname;
                 g.Board = TicTacToeBoard.Construct(g.Dimensions, g.BoardSize);
-                g.History = new List<TicTacToeGameHistoryEntry>();
+                g.History = new List<TicTacToeMoveHistory>();
                 g.Stage = "In Progress";
             });
             var game = await gameStatusRepository.Find(LobbyCode);

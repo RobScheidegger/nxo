@@ -26,7 +26,7 @@ namespace NXO.Shared.Modules
         public int PlayerCount { get {
                 return Players?.Count()??0;
             } }
-        public List<TicTacToeGameHistoryEntry> History { get; set; }
+        public List<TicTacToeMoveHistory> History { get; set; }
     }
     
 }

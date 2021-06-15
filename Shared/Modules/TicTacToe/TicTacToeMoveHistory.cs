@@ -4,10 +4,9 @@ using System.Text;
 
 namespace NXO.Shared.Modules
 {
-    public class TicTacToeGameHistoryEntry
+    public class TicTacToeMoveHistory
     {
         public string PlayerName { get; set; }
-        public string Message { get; set; }
         public IEnumerable<int> MovePath { get; set; }
     }
 }
