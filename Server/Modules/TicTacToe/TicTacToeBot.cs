@@ -11,11 +11,11 @@ namespace NXO.Server.Modules.TicTacToe
     {
         private readonly TicTacToeGameLogicHandler logic;
         private readonly Random random = new();
-        private const int defaultAlpha = -1000;
-        private const int defaultBeta = 1000;
+        private const int defaultAlpha = -5000;
+        private const int defaultBeta = 5000;
         private const int defaultMaxDepth = 7;
         private const int timeout = 30;
-        private const int winningScore = 100;
+        private const int winningScore = 1000;
 
         public TicTacToeBot(TicTacToeGameLogicHandler logic)
         {
@@ -45,7 +45,7 @@ namespace NXO.Server.Modules.TicTacToe
             List<MinimaxResult> minimaxMoves = available_moves.Select((v, i) => new MinimaxResult()
             {
                 DepthReached = 0,
-                Score = -1000,
+                Score = -5000,
                 Move = v,
                 Index = i
             }).ToList();
@@ -89,7 +89,7 @@ namespace NXO.Server.Modules.TicTacToe
                         }
                     }
                     var maxScore = minimaxMoves.Max(i => i.Score);
-                    forcedMove = minimaxMoves.Where(i => i.Score == maxScore).Count() == 1;
+                    forcedMove = minimaxMoves.Where(i => i.Score == maxScore).Count() == 1 || maxScore >= 300;
                     if (cancelToken.Token.IsCancellationRequested || forcedMove)
                     {
                         break;
@@ -201,11 +201,11 @@ namespace NXO.Server.Modules.TicTacToe
 
             if (score == winningScore)
             {
-                return score - depth;
+                return score - depth*100;
             }
             else if (score == -winningScore)
             {
-                return score + depth;
+                return score + depth * 100;
             }
             else if (depth >= maxDepth)
             {

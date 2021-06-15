@@ -148,8 +148,8 @@ namespace NXO.Server.Services
                         Bot = true
                     }
                 },
-                BoardSize = 5,
-                Dimensions = 2
+                BoardSize = 4,
+                Dimensions = 3
             };
 
             await tictactoeGames.Add(botvsbotGame.LobbyCode, botvsbotGame);
