@@ -61,7 +61,8 @@
 
         if (Display != null && Display.HighlightedCellPath != null)
         {
-            return PathOf.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i);
+            return PathOf.Zip(Display.HighlightedCellPath, (i, j) => i == j).All(i => i) ||
+                PathOf.Zip(Display.LastMove, (i, j) => i == j).All(i => i);
         }
         return false;
     }

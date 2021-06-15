@@ -14,7 +14,7 @@ namespace NXO.Server.Modules.TicTacToe
         private const int defaultAlpha = -5000;
         private const int defaultBeta = 5000;
         private const int defaultMaxDepth = 7;
-        private const int timeout = 30;
+        private const int timeout = 5;
         private const int winningScore = 1000;
 
         public TicTacToeBot(TicTacToeGameLogicHandler logic)
