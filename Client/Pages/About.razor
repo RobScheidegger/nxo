@@ -9,7 +9,21 @@
     <div>
         <h3>Rules (Mathematical)</h3>
         <p>
-            The win conditions are much easier to enunciate mathematically, as if we let \(V\) be the set of
+            The win conditions are much easier to enunciate mathematically, as if we let \(V\) be the set of basis vectors moving 1 unit in any direction in \( d \) dimensional space. This set is given by:
+
+            \[  V = \bigg\{ \begin{pmatrix} a_1\\a_2\\\cdots\\a_d \end{pmatrix} : a_i \in \{ -1,0,1 \} \bigg\} \ / \ \textbf{0} \]
+
+            Let's then consider the set of moves for a given player \( P \). A player wins if there is a move \( p \in P \) such that there exists some vector \( v \in V \) such that the following set has \( n \) elements:
+
+            \[ P(p,v) = \{ p + xv : x \in \mathbb{Z} \land (p + xv) \in B_{n,d}\} \]
+
+            Where \( B_{n,d} \) is the set of the game board for a given board size \( n \) and number of dimensions \( d \). To be precise, the board is given in set builder notation as:
+
+            \[ B_{n,d} = \bigg\{ \begin{pmatrix} a_1\\a_2\\\cdots\\a_d \end{pmatrix} : a_i \in \{ 0,1,2,\cdots , n - 1 \} \bigg\} \]
+
+            These are the same coordinates that we use internally, and in the game board you can see each placement in terms of these coordinates (incremented by 1 for simpler counting purposes). From this it is also clear that the set has order \( n^d \).
+
+            Another way to think about this condition is if you take a move that you have played, and can move along some \( v \in V \) only along your own moves to reach the other side of the game board, then you have won.
         </p>
         
     </div>
