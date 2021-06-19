@@ -13,6 +13,8 @@ using NXO.Shared.Modules;
 using NXO.Shared.Repository;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using System;
+using NXO.Server.Modules.TicTacToe;
 
 namespace NXO.Server
 {
@@ -30,6 +32,7 @@ namespace NXO.Server
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddSignalR();
             services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddRazorPages();
 
@@ -67,6 +70,12 @@ namespace NXO.Server
                 app.UseHsts();
             }
 
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(120),
+            };
+
+            app.UseWebSockets();
 
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
@@ -79,6 +88,7 @@ namespace NXO.Server
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
+                endpoints.MapHub<TicTacToeHub>("tictactoe/ws");
             });
         }
     }

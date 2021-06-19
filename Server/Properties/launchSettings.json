@@ -9,12 +9,13 @@
   },
   "profiles": {
     "IIS Express": {
-      "commandName": "IISExpress",
+      "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "http://localhost:62442/tictactoe/test/player1",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
+      "applicationUrl": "http://localhost:62442",
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
     },
     "NXO.Server": {

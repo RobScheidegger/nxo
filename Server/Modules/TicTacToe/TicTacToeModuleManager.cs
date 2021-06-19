@@ -137,7 +137,7 @@ namespace NXO.Server.Modules
         private static bool IsValidMove(TicTacToeMove properMove, TicTacToeGameStatus gameStatus)
         {
             return gameStatus.Board.GetForPosition(properMove.Path) == null
-                && properMove.PlayerId == gameStatus.CurrentPlayerId;
+                && properMove.PlayerId == gameStatus.CurrentPlayerId; 
         }
 
         public async Task<SaveSettingsResult> SaveSettingsAsync(IGameStatus settings)

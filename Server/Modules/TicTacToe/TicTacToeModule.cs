@@ -19,6 +19,7 @@ namespace NXO.Shared.Modules
         {
             services.AddSingleton<IRepository<TicTacToeGameStatus>, InMemoryRepository<TicTacToeGameStatus>>();
             services.AddSingleton<IModuleManager, TicTacToeModuleManager>();
+            services.AddSingleton<TicTacToeModuleManager>();
             services.AddSingleton<TicTacToeGameLogicHandler>();
             services.AddSingleton<TicTacToeBot>();
         }

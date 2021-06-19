@@ -1,8 +1,11 @@
 ﻿@page "/tictactoe/{LobbyCode}/{PlayerId}"
 @inject HttpClient Http
+@inject NavigationManager navigation 
 @implements IDisposable
 @using TicTacToe; 
+@using Microsoft.AspNetCore.SignalR.Client
 @using System.Threading;
+
 
 <div id="game">
     <h3>Tic Tac Toe </h3>
@@ -72,20 +75,26 @@
     private TicTacToeDisplay Display { get; set; }
     private const int TimerInterval = 1000;
     private Timer Timer { get; set; }
-
     public TicTacToeGameStatus GameState { get; set; }
+    private HubConnection hubConnection;
 
     protected override async Task OnParametersSetAsync()
     {
         //Dispose any old instance that we may have had before
         Dispose();
         Display = new TicTacToeDisplay();
-        await Refresh();
-        Timer = new Timer(new TimerCallback(async (o) => await Refresh()),null,0, TimerInterval);
 
-        await base.OnInitializedAsync();
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(navigation.ToAbsoluteUri($"/tictactoe/ws?LobbyCode={LobbyCode}"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<TicTacToeGameStatus>("UpdateBoard", HandleNewGameState);
+        await hubConnection.StartAsync();
+
+        await base.OnParametersSetAsync();
     }
-    public void Dispose()
+    public async void Dispose()
     {
         if (Timer != null)
         {
@@ -93,6 +102,10 @@
             Timer.Dispose();
         }
         GameState = null;
+        if (hubConnection != null)
+        {
+            await hubConnection.StopAsync();
+        }
     }
 
     private async void ClickCell(IEnumerable<int> Path)
@@ -103,17 +116,11 @@
             Path = Path,
             PlayerId = PlayerId
         };
-        var moveResult = await Http.PostFromJsonAsync<TicTacToeMove, MoveResult>("TicTacToe/PerformMove", move);
-        if(!moveResult.Success)
-        {
-            ErrorText = moveResult.Message;
-        }
-        await Refresh();
+        await hubConnection.SendAsync("PerformMove", move);
     }
-    private async Task Refresh()
+    public void HandleNewGameState(TicTacToeGameStatus newGameState)
     {
-        var newGameState = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
-        if(newGameState.History.Count != GameState?.History.Count)
+        if (newGameState.History.Count != GameState?.History.Count)
         {
             RegisterNewMove();
             Display.LastMove = newGameState.History.LastOrDefault()?.MovePath;
