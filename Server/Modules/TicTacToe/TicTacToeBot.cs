@@ -14,7 +14,7 @@ namespace NXO.Server.Modules.TicTacToe
         private const int defaultAlpha = -5000;
         private const int defaultBeta = 5000;
         private const int defaultMaxDepth = 7;
-        private const int timeout = 5;
+        private const int timeout = 30;
         private const int winningScore = 1000;
 
         public TicTacToeBot(TicTacToeGameLogicHandler logic)
@@ -35,7 +35,7 @@ namespace NXO.Server.Modules.TicTacToe
             var oppositePlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
                 arr.GetValue(path) as char? == oppositePlayer.Token, board.Dimension);
 
-            var available_moves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) is null, board.Dimension);
+            var available_moves = moveOrder(logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) is null, board.Dimension),currentPlayerMoves,oppositePlayerMoves,GameStatus.Dimensions,GameStatus.BoardSize);
             bool hasMoved = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension).Any();
             if (!available_moves.Any())
             {
@@ -62,7 +62,7 @@ namespace NXO.Server.Modules.TicTacToe
                 var forcedMove = false;
                 for (int d = 0; d < defaultMaxDepth + 1; d++)
                 {
-                    foreach(var move in minimaxMoves)
+                    foreach (var move in minimaxMoves.OrderBy(i => i.Index))
                     {
                         for (int j = 0; j < d + 1; j++)
                         {
@@ -94,6 +94,13 @@ namespace NXO.Server.Modules.TicTacToe
                     {
                         break;
                     }
+                    
+                    if (d == 1)
+                    {
+                        minimaxMoves = minimaxMoves.OrderBy(i => i.Score).ToList();
+                        minimaxMoves.RemoveRange(0, minimaxMoves.Count - 15);
+                    }
+
                 }
             }, cancelToken.Token);
 
@@ -120,6 +127,28 @@ namespace NXO.Server.Modules.TicTacToe
                 Path = finalResult.Move
             };
             return Task.FromResult(bestMove);
+        }
+
+        public IEnumerable<List<int>> moveOrder(IEnumerable<List<int>> available_moves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int dimension, int boardSize)
+        {
+            var currentPlayerMovesHash = logic.HashMoves(currentPlayerMoves);
+            var oppositePlayerMovesHash = logic.HashMoves(oppositePlayerMoves);
+            IEnumerable<MoveScore> moveScores = available_moves.Select(move => new MoveScore() { Move = move, Score = 0 }).ToArray();
+            var vectors = logic.GetVectorsForDimension(dimension);
+            foreach (var moveScore in moveScores)
+            {
+                int count = 0;
+                foreach (var vector in vectors)
+                {
+                    var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(moveScore.Move, n, vector));
+                    var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
+                    count += hashes.Count(hash => currentPlayerMovesHash.Contains(hash) || oppositePlayerMovesHash.Contains(hash));
+                }
+                moveScore.Score = count;
+            }
+
+            
+            return moveScores.OrderByDescending((moveScore) => moveScore.Score).Select(moveScore => moveScore.Move);
         }
 
         public int Minimax(Array board, int depth, TicTacToeGameStatus GameStatus, TicTacToePlayer currentPlayer, int alpha, int beta, List<int> firstMove = null)
@@ -320,5 +349,11 @@ namespace NXO.Server.Modules.TicTacToe
     {
         public bool Available { get; set; }
         public List<int> Move { get; set; }
+    }
+
+    public class MoveScore
+    {
+        public List<int> Move { get; set; }
+        public int Score { get; set; }
     }
 }
