@@ -148,6 +148,7 @@ namespace NXO.Server.Modules
                 s.BoardSize = properSettings.BoardSize;
                 s.Dimensions = properSettings.Dimensions;
                 s.MaximumPlayers = properSettings.MaximumPlayers;
+                s.Nickname = properSettings.Nickname;
             });
             return new SaveSettingsResult()
             {

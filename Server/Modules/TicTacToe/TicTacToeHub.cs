@@ -37,7 +37,9 @@ namespace NXO.Server.Modules.TicTacToe
             {
                 await Clients.Client(Context.ConnectionId).SendAsync("UpdateBoard", gameStatus);
             }
-            
+
+            await Clients.Group(lobbyCode).SendAsync("UpdatePlayers", gameStatus);
+
             await base.OnConnectedAsync();
         }
 

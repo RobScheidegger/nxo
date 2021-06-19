@@ -120,7 +120,7 @@ namespace NXO.Server.Services
             };
 
             await tictactoeGames.Add(testGame3.LobbyCode, testGame3);
-            await tictactoe.StartGame(testGame3.LobbyCode);
+            _ = tictactoe.StartGame(testGame3.LobbyCode);
 
             return;
             var botvsbotGame = new TicTacToeGameStatus()
