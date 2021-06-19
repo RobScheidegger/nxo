@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using NXO.Client.Pages;
+using NXO.Client.Pages.TicTacToe;
 
 namespace NXO.Client
 {

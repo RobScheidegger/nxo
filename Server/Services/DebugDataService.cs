@@ -24,6 +24,7 @@ namespace NXO.Server.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            
             var tictactoe = modules["tictactoe"];
             var testGame = new TicTacToeGameStatus()
             {
@@ -121,6 +122,7 @@ namespace NXO.Server.Services
             await tictactoeGames.Add(testGame3.LobbyCode, testGame3);
             await tictactoe.StartGame(testGame3.LobbyCode);
 
+            return;
             var botvsbotGame = new TicTacToeGameStatus()
             {
                 LobbyCode = "botvsbot",

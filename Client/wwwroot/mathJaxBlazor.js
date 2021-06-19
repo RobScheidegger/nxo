@@ -33,7 +33,6 @@ window.mathJaxBlazor = {
     typesetClear: function () {
         try {
             this.undoTypset();
-            //MathJax.startup.document.state(0);
             MathJax.texReset();
             MathJax.typesetClear();
             MathJax.startup.document.clear();

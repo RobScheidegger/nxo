@@ -1,13 +1,16 @@
 ﻿@page "/tictactoe/lobby/{LobbyCode}/{PlayerId}"
+@implements IDisposable
 @inject HttpClient Http
 @inject NavigationManager navigation
 @using System.Timers
+@using Microsoft.AspNetCore.SignalR.Client
+
 
 <div class="container">
-    @if (Message != null)
+    @if (ErrorMessage != null)
     {
-        <div class="alert alert-@MessageType">
-            @Message
+        <div class="alert alert-error">
+            @ErrorMessage
         </div>
     }
     <div class="row">
@@ -19,26 +22,61 @@
                 <div class="card-body">
                     <div>Code: @Status?.LobbyCode</div>
                     <div>Status: @Status?.Stage</div>
-                    @if (Status != null && Status?.HostPlayerId == PlayerId)
+                    @if (Status != null)
                     {
+                        var isReadonly = Status.HostPlayerId != PlayerId;
                         <h4>Game Settings</h4>
                         <div class="form-group">
+                            <label class="control-label">Lobby Name</label>
+                            @if(isReadonly)
+                            {
+                                <input class="form-control" @bind="@Status.Nickname" type="number" @onkeypress="SaveSettings" readonly/>
+                            }
+                            else
+                            {
+                                <input class="form-control" @bind="@Status.Nickname" type="number" @onkeypress="SaveSettings"/>
+                            }
+                        </div>
+                        <div class="form-group">
                             <label class="control-label">Maximum Players</label>
-                            <input class="form-control" @bind="@Status.MaximumPlayers" type="number" />
+                            @if(isReadonly)
+                            {
+                                <input class="form-control" @bind="@Status.MaximumPlayers" type="number" @onkeypress="SaveSettings" readonly/>
+                            }
+                            else
+                            {
+                                <input class="form-control" @bind="@Status.MaximumPlayers" type="number" @onkeypress="SaveSettings"/>
+                            }
                         </div>
                         <h4>Game Configuration</h4>
                         <div class="form-group">
                             <label class="control-label">Dimensions</label>
-                            <input class="form-control" @bind="@Status.Dimensions" type="number" />
+                            @if(isReadonly)
+                            {
+                                <input class="form-control" @bind="@Status.Dimensions" type="number" @onkeypress="SaveSettings" readonly/>
+                            }
+                            else
+                            {
+                                <input class="form-control" @bind="@Status.Dimensions" type="number" @onkeypress="SaveSettings" />
+                            }           
                         </div>
                         <div class="form-group">
                             <label class="control-label">Board Size</label>
-                            <input class="form-control" @bind="@Status.BoardSize" type="number" />
+                            @if(isReadonly)
+                            {
+                                <input class="form-control" @bind="@Status.BoardSize" type="number" @onkeypress="SaveSettings" readonly/>
+                            }
+                            else
+                            {
+                                <input class="form-control" @bind="@Status.BoardSize" type="number" @onkeypress="SaveSettings"/>
+                            }
                         </div>
-                        <div class="form-group mt-2">
-                            <a class="btn btn-primary" @onclick="ClickSaveSettings">Save Settings</a>
-                            <a class="btn btn-success" @onclick="ClickStartGame">Start Game</a>
-                        </div>
+                        @if (Status.HostPlayerId == PlayerId)
+                        {
+                            <div class="form-group mt-2">
+                                <a class="btn btn-success" @onclick="ClickStartGame">Start Game</a>
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -89,59 +127,58 @@
     [Parameter]
     public string PlayerId { get; set; }
     public TicTacToeGameStatus Status { get; set; }
-    public string Message { get; set; }
-    public string MessageType { get; set; }
+    public string ErrorMessage { get; set; }
     public char PlayerToken { get; set; }
     private const int TimerInterval = 1000;
-    protected override async Task OnInitializedAsync()
-    {
-        await Refresh(true);
-        var timer = new Timer(TimerInterval);
-        timer.Elapsed += async (obj, e) => await Refresh(false);
-        timer.Start();
+    private HubConnection hubConnection;
 
-        await base.OnInitializedAsync();
-    }
-    private async Task Refresh(bool FirstLoad)
+    protected override async Task OnParametersSetAsync()
     {
-        try
-        {
-            var newStatus = await Http.PostFromJsonAsync<string, TicTacToeGameStatus>($"TicTacToe/GetGameStatus?LobbyCode={LobbyCode}", LobbyCode);
-            if(!FirstLoad && newStatus.HostPlayerId == PlayerId)
-            {
-                Status.Players = newStatus.Players;
-                Status.Stage = newStatus.Stage;
-            }
-            else
-            {
-                Status = newStatus;
-            }
-            if (Status.Stage != "Lobby")
-            {
-                navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}");
-            }
-            else
-            {
-                StateHasChanged();
-            }
-        }
-        catch (Exception err)
-        {
-            Console.WriteLine("ERROR" + err.Message);
-        }
+        //Dispose any old instance that we may have had before
+        Dispose();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(navigation.ToAbsoluteUri($"/tictactoe/ws?LobbyCode={LobbyCode}"))
+            .WithAutomaticReconnect()
+            .Build();
+        hubConnection.On<TicTacToeGameStatus>("SetStatus", SetStatus);
+        hubConnection.On<TicTacToeGameStatus>("UpdatePlayers", HandleUpdatePlayers);
+        hubConnection.On("GameStarting", () => navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}"));
+        hubConnection.On<TicTacToeGameStatus>("UpdateSettings", HandleUpdateSettings);
+        hubConnection.On<string>("ErrorMessage", error => ErrorMessage = error);
+        await hubConnection.StartAsync();
+
+        await base.OnParametersSetAsync();
     }
-    private async Task ClickSaveSettings()
+    private async Task SetStatus(TicTacToeGameStatus status)
     {
-        var result = await Http.PostFromJsonAsync<TicTacToeGameStatus, SaveSettingsResult>("TicTacToe/SaveSettings", Status);
-        Message = result.Message;
-        MessageType = result.Success ? "success" : "danger";
+        Status = status;
+        StateHasChanged();
+    }
+    private async Task SaveSettings()
+    {
+        await hubConnection.SendAsync("SaveSettings", Status);
     }
     private async Task ClickStartGame()
     {
-        var result = await Http.PostFromJsonAsync<string, StartGameResult>($"TicTacToe/StartGame?LobbyCode={LobbyCode}", LobbyCode);
-        if (result.Success)
-        {
-            navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}");
-        }
+        await hubConnection.SendAsync("StartGame", Status);
+    }
+    public async void Dispose()
+    {
+        if(hubConnection != null)
+            await hubConnection.DisposeAsync();
+    }
+    public void HandleUpdatePlayers(TicTacToeGameStatus updatedStatus)
+    {
+        Status.Players = updatedStatus.Players;
+    }
+    public void HandleUpdateSettings(TicTacToeGameStatus updatedStatus)
+    {
+        if (Status.HostPlayerId == PlayerId)
+            return;
+        Status.MaximumPlayers = updatedStatus.MaximumPlayers;
+        Status.Nickname = updatedStatus.Nickname;
+        Status.BoardSize = updatedStatus.BoardSize;
+        Status.Dimensions = updatedStatus.Dimensions;
     }
 }

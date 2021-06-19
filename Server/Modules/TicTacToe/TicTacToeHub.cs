@@ -28,11 +28,20 @@ namespace NXO.Server.Modules.TicTacToe
                 throw new DataMisalignedException("No LobbyCode was found in the query string of the connection.");
             }
             await Groups.AddToGroupAsync(Context.ConnectionId, lobbyCode);
-            await Clients.Client(Context.ConnectionId).SendAsync("UpdateBoard", await statusRepository.Find(lobbyCode));
+            var gameStatus = await statusRepository.Find(lobbyCode);
+            if (gameStatus.Stage == "Lobby")
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync("SetStatus", gameStatus);
+            }
+            else
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync("UpdateBoard", gameStatus);
+            }
+            
             await base.OnConnectedAsync();
         }
 
-        public async Task<MoveResult> PerformMove(TicTacToeMove move)
+        public async Task PerformMove(TicTacToeMove move)
         {
             var lobbyCode = move.LobbyCode;
             var moveResult = await moduleManager.PerformMoveAsync(move);
@@ -40,7 +49,23 @@ namespace NXO.Server.Modules.TicTacToe
             {
                 await Clients.Group(lobbyCode).SendAsync("UpdateBoard", await statusRepository.Find(lobbyCode));
             }
-            return moveResult;
+            else
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync("Error", moveResult.Message);
+            }
+        }
+
+        public async Task SaveSettings(TicTacToeGameStatus status)
+        {
+            var result = await moduleManager.SaveSettingsAsync(status);
+            if(result.Success)
+            {
+                await Clients.Group(status.LobbyCode).SendAsync("UpdateSettings", await statusRepository.Find(status.LobbyCode));
+            }
+            else
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync("Error", result.Message);
+            }
         }
     }
 }

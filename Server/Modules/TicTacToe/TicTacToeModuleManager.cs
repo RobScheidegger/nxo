@@ -26,7 +26,7 @@ namespace NXO.Server.Modules
             this.bot = bot;
         }
         public string GameType => "tictactoe";
-        private char[] Tokens = { 'x', 'o', 'q'};
+        private char[] Tokens = { 'x', 'o', 'q', 'y', 't'};
         private int TokenIndex = 0;
         private char GetNextToken()
         {
