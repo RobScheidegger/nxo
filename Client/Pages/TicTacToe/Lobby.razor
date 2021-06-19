@@ -30,22 +30,22 @@
                             <label class="control-label">Lobby Name</label>
                             @if(isReadonly)
                             {
-                                <input class="form-control" @bind="@Status.Nickname" type="number" @onkeypress="SaveSettings" readonly/>
+                                <input class="form-control" @bind="@Status.Nickname" readonly/>
                             }
                             else
                             {
-                                <input class="form-control" @bind="@Status.Nickname" type="number" @onkeypress="SaveSettings"/>
+                                <input class="form-control" @bind-value="@Status.Nickname" @bind-value:event="oninput" @onkeyup="SaveSettings"/>
                             }
                         </div>
                         <div class="form-group">
                             <label class="control-label">Maximum Players</label>
                             @if(isReadonly)
                             {
-                                <input class="form-control" @bind="@Status.MaximumPlayers" type="number" @onkeypress="SaveSettings" readonly/>
+                                <input class="form-control" @bind="@Status.MaximumPlayers" type="number" readonly/>
                             }
                             else
                             {
-                                <input class="form-control" @bind="@Status.MaximumPlayers" type="number" @onkeypress="SaveSettings"/>
+                                <input class="form-control" @bind-value="@Status.MaximumPlayers" @bind-value:event="oninput" type="number" @onkeyup="SaveSettings"/>
                             }
                         </div>
                         <h4>Game Configuration</h4>
@@ -53,22 +53,22 @@
                             <label class="control-label">Dimensions</label>
                             @if(isReadonly)
                             {
-                                <input class="form-control" @bind="@Status.Dimensions" type="number" @onkeypress="SaveSettings" readonly/>
+                                <input class="form-control" @bind="@Status.Dimensions" type="number" readonly/>
                             }
                             else
                             {
-                                <input class="form-control" @bind="@Status.Dimensions" type="number" @onkeypress="SaveSettings" />
+                                <input class="form-control" @bind-value="@Status.Dimensions" @bind-value:event="oninput" type="number" @onkeyup="SaveSettings" />
                             }           
                         </div>
                         <div class="form-group">
                             <label class="control-label">Board Size</label>
                             @if(isReadonly)
                             {
-                                <input class="form-control" @bind="@Status.BoardSize" type="number" @onkeypress="SaveSettings" readonly/>
+                                <input class="form-control" @bind="@Status.BoardSize" type="number" readonly/>
                             }
                             else
                             {
-                                <input class="form-control" @bind="@Status.BoardSize" type="number" @onkeypress="SaveSettings"/>
+                                <input class="form-control" @bind-value="@Status.BoardSize" @bind-value:event="oninput" type="number" @onkeyup="SaveSettings"/>
                             }
                         </div>
                         @if (Status.HostPlayerId == PlayerId)
@@ -141,16 +141,18 @@
             .WithUrl(navigation.ToAbsoluteUri($"/tictactoe/ws?LobbyCode={LobbyCode}"))
             .WithAutomaticReconnect()
             .Build();
+
         hubConnection.On<TicTacToeGameStatus>("SetStatus", SetStatus);
         hubConnection.On<TicTacToeGameStatus>("UpdatePlayers", HandleUpdatePlayers);
         hubConnection.On("GameStarting", () => navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}"));
         hubConnection.On<TicTacToeGameStatus>("UpdateSettings", HandleUpdateSettings);
         hubConnection.On<string>("ErrorMessage", error => ErrorMessage = error);
+
         await hubConnection.StartAsync();
 
         await base.OnParametersSetAsync();
     }
-    private async Task SetStatus(TicTacToeGameStatus status)
+    private void SetStatus(TicTacToeGameStatus status)
     {
         Status = status;
         StateHasChanged();
@@ -161,7 +163,7 @@
     }
     private async Task ClickStartGame()
     {
-        await hubConnection.SendAsync("StartGame", Status);
+        await hubConnection.SendAsync("StartGame", Status.LobbyCode);
     }
     public async void Dispose()
     {
@@ -171,6 +173,7 @@
     public void HandleUpdatePlayers(TicTacToeGameStatus updatedStatus)
     {
         Status.Players = updatedStatus.Players;
+        StateHasChanged();
     }
     public void HandleUpdateSettings(TicTacToeGameStatus updatedStatus)
     {
@@ -180,5 +183,6 @@
         Status.Nickname = updatedStatus.Nickname;
         Status.BoardSize = updatedStatus.BoardSize;
         Status.Dimensions = updatedStatus.Dimensions;
+        StateHasChanged();
     }
 }

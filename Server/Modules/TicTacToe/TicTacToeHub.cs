@@ -69,5 +69,18 @@ namespace NXO.Server.Modules.TicTacToe
                 await Clients.Client(Context.ConnectionId).SendAsync("Error", result.Message);
             }
         }
+        
+        public async Task StartGame(string LobbyCode)
+        {
+            var result = await moduleManager.StartGame(LobbyCode);
+            if(result.Success)
+            {
+                await Clients.Group(LobbyCode).SendAsync("GameStarting");
+            }
+            else
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync("Error", "Could not start game.");
+            }
+        }
     }
 }
