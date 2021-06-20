@@ -87,6 +87,10 @@
                     Players
                 </div>
                 <div class="card-body">
+                    <div class="form-inline">
+                        <input class="form-control" @bind-value="@Nickname" @bind-value:event="oninput" @onkeyup="SavePlayerData" />
+                        <input class="form-control" @bind-value="@Token" @bind-value:event="oninput" @onkeyup="SavePlayerData" />
+                    </div>
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
@@ -129,6 +133,8 @@
     public TicTacToeGameStatus Status { get; set; }
     public string ErrorMessage { get; set; }
     public char PlayerToken { get; set; }
+    public string Nickname { get; set; }
+    public char Token { get; set; }
     private const int TimerInterval = 1000;
     private HubConnection hubConnection;
 
@@ -155,6 +161,9 @@
     private void SetStatus(TicTacToeGameStatus status)
     {
         Status = status;
+        var player = status.Players.FirstOrDefault(i => i.PlayerId == PlayerId);
+        Nickname = player.Nickname;
+        Token = player.Token;
         StateHasChanged();
     }
     private async Task SaveSettings()
@@ -184,5 +193,9 @@
         Status.BoardSize = updatedStatus.BoardSize;
         Status.Dimensions = updatedStatus.Dimensions;
         StateHasChanged();
+    }
+    public async void SavePlayerData()
+    {
+        await hubConnection.SendAsync("SavePlayerData", LobbyCode, PlayerId, Nickname, Token);
     }
 }

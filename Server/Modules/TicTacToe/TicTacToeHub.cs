@@ -82,5 +82,16 @@ namespace NXO.Server.Modules.TicTacToe
                 await Clients.Client(Context.ConnectionId).SendAsync("Error", "Could not start game.");
             }
         }
+
+        public async Task SavePlayerData(string LobbyCode, string PlayerId, string Nickname, char Token)
+        {
+            await statusRepository.Update(LobbyCode, status =>
+            {
+                var player = status.Players.First(i => i.PlayerId == PlayerId);
+                player.Nickname = Nickname;
+                player.Token = Token;
+            });
+            await Clients.Group(LobbyCode).SendAsync("UpdatePlayers", await statusRepository.Find(LobbyCode));
+        }
     }
 }
