@@ -21,7 +21,9 @@ namespace NXO.Shared.Modules
             services.AddSingleton<IModuleManager, TicTacToeModuleManager>();
             services.AddSingleton<TicTacToeModuleManager>();
             services.AddSingleton<TicTacToeGameLogicHandler>();
-            services.AddSingleton<TicTacToeBot>();
+
+            //Register Bots
+            services.AddSingleton<ITicTacToeBot, TicTacToeMinimaxBot>();
         }
 
     }

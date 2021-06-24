@@ -112,7 +112,8 @@ namespace NXO.Server.Services
                         PlayerId = "bot",
                         Nickname = "Test Bot",
                         Token = 'o',
-                        Bot = true
+                        Bot = true,
+                        BotType = "Minimax"
                     }
                 },
                 BoardSize = 4,
@@ -140,14 +141,16 @@ namespace NXO.Server.Services
                         PlayerId = "bot2",
                         Nickname = "Test Box 2",
                         Token = 'x',
-                        Bot = true
+                        Bot = true,
+                        BotType = "Minimax"
                     },
                     new TicTacToePlayer()
                     {
                         PlayerId = "bot1",
                         Nickname = "Test Bot",
                         Token = 'o',
-                        Bot = true
+                        Bot = true,
+                        BotType = "Minimax"
                     }
                 },
                 BoardSize = 4,

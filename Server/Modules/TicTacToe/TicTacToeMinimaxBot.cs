@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NXO.Server.Modules.TicTacToe
 {
-    public class TicTacToeBot
+    public class TicTacToeMinimaxBot : ITicTacToeBot
     {
         private readonly TicTacToeGameLogicHandler logic;
         private readonly Random random = new();
@@ -17,7 +17,9 @@ namespace NXO.Server.Modules.TicTacToe
         private const int timeout = 30;
         private const int winningScore = 1000;
 
-        public TicTacToeBot(TicTacToeGameLogicHandler logic)
+        public string Type => "Minimax";
+
+        public TicTacToeMinimaxBot(TicTacToeGameLogicHandler logic)
         {
             this.logic = logic;
         }
@@ -151,71 +153,6 @@ namespace NXO.Server.Modules.TicTacToe
             return moveScores.OrderByDescending((moveScore) => moveScore.Score).Select(moveScore => moveScore.Move);
         }
 
-        public int Minimax(Array board, int depth, TicTacToeGameStatus GameStatus, TicTacToePlayer currentPlayer, int alpha, int beta, List<int> firstMove = null)
-        {
-
-            int bestVal;
-            char currentToken = currentPlayer.Token;
-            TicTacToePlayer opp = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
-            int minmaxInt = currentPlayer.Bot ? 10 : -10;
-            int score = logic.HasPlayerWon(currentToken, board) ? minmaxInt : logic.HasPlayerWon(opp.Token, board) ? (minmaxInt * -1) : 0;
-
-            if (score == 10)
-            {
-                return score - depth;
-            }
-            else if (score == -10)
-            {
-                return score + depth;
-            }
-
-
-            var available_moves = firstMove == null ? logic.GetPositionFromBoardWhere(board, (path, arr) => arr.GetValue(path) is null, board.Rank) : new List<List<int>>() { firstMove };
-            if (!available_moves.Any())
-            {
-                return 0;
-            }
-
-            if (depth >= 3)
-            {
-                return currentPlayer.Bot ? defaultAlpha : defaultBeta;
-            }
-
-            if (currentPlayer.Bot) // MAX
-            {
-                bestVal = defaultAlpha;
-                foreach (var move in available_moves)
-                {
-
-                    Array testBoard = logic.CloneBoard(board);
-                    testBoard.SetValue(currentToken, move.ToArray());
-                    bestVal = Math.Max(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, alpha, beta));
-
-                    alpha = Math.Max(alpha, bestVal);
-                    if (beta <= alpha)
-                    {
-                        break;
-                    }
-                }
-
-            }
-            else // MIN
-            {
-                bestVal = defaultBeta;
-                foreach (var move in available_moves)
-                {
-                    Array testBoard = logic.CloneBoard(board);
-                    testBoard.SetValue(currentToken, move.ToArray());
-                    bestVal = Math.Min(bestVal, Minimax(testBoard, depth + 1, GameStatus, opp, alpha, beta));
-                    beta = Math.Min(beta, bestVal);
-                    if (beta <= alpha)
-                    {
-                        break;
-                    }
-                }
-            }
-            return bestVal;
-        }
         public int IterativeDeepening(ref List<TrackedMove> availableMoves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, 
             int depth, int maxDepth, TicTacToeGameStatus gameStatus, TicTacToePlayer currentPlayer, int alpha, int beta, TrackedMove firstMove = null)
         {

@@ -5,7 +5,7 @@
 @using TicTacToe; 
 @using Microsoft.AspNetCore.SignalR.Client
 @using System.Threading;
-
+@using System.Linq;
 
 <div id="game">
     <h3>Tic Tac Toe </h3>
@@ -47,7 +47,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(var history in GameState.History)
+                            @foreach(var history in GameState.History.AsEnumerable().Reverse())
                             {
                             <tr class="flextr">
                                 <td>@history.PlayerName played at @string.Join(",", history.MovePath.Select(i => i + 1))</td>

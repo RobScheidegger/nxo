@@ -11,6 +11,10 @@
         /// </summary>
         public bool Bot { get; set; }
         /// <summary>
+        /// The type of the bot to identify which of the bots to use.
+        /// </summary>
+        public string BotType { get; set; }
+        /// <summary>
         /// The playing token that the player wants to play with.
         /// </summary>
         public char Token { get; set; }

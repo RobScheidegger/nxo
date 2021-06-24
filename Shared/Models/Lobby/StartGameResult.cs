@@ -7,5 +7,6 @@ namespace NXO.Shared.Models
     public class StartGameResult
     {
         public bool Success { get; set; }
+        public string Message { get; set; }
     }
 }

@@ -15,15 +15,15 @@ namespace NXO.Server.Modules
     {
         private readonly IGuidProvider guid;
         private readonly IRepository<TicTacToeGameStatus> gameStatusRepository;
-        private readonly TicTacToeBot bot;
+        private readonly Dictionary<string, ITicTacToeBot> bots;
         private readonly TicTacToeGameLogicHandler logic;
         public TicTacToeModuleManager(IGuidProvider guid,
-            IRepository<TicTacToeGameStatus> gameStatus, TicTacToeGameLogicHandler logic, TicTacToeBot bot)
+            IRepository<TicTacToeGameStatus> gameStatus, TicTacToeGameLogicHandler logic, IEnumerable<ITicTacToeBot> bots)
         {
             this.guid = guid;
             this.gameStatusRepository = gameStatus;
             this.logic = logic;
-            this.bot = bot;
+            this.bots = bots.ToDictionary(i => i.Type, i => i);
         }
         public string GameType => "tictactoe";
         private char[] Tokens = { 'x', 'o', 'q', 'y', 't'};
@@ -107,7 +107,7 @@ namespace NXO.Server.Modules
                 }
                 else if (nextPlayer.Bot)
                 {
-                    var botMove = await bot.GetNextMove(gameStatus);
+                    var botMove = await bots[nextPlayer.BotType].GetNextMove(gameStatus);
                     await PerformMoveAsync(botMove);
                 }
                 return new MoveResult()
@@ -170,11 +170,12 @@ namespace NXO.Server.Modules
                 g.Stage = "In Progress";
             });
             var game = await gameStatusRepository.Find(LobbyCode);
-            if (game.Players.Where(p => p.PlayerId == game.CurrentPlayerId).First().Bot)
+            var player = game.Players.Where(p => p.PlayerId == game.CurrentPlayerId).First();
+            if (player.Bot)
             {
                 _ = Task.Run(async () =>
                 {
-                    var botMove = await bot.GetNextMove(game);
+                    var botMove = await bots[player.BotType].GetNextMove(game);
                     await PerformMoveAsync(botMove);
                 });
             }

@@ -11,12 +11,12 @@ namespace NXO.UnitTests.TicTacToe
 {
     public class TicTacToeBotTests
     {
-        private readonly TicTacToeBot bot;
+        private readonly TicTacToeMinimaxBot bot;
         private readonly TicTacToeGameLogicHandler logic;
         public TicTacToeBotTests()
         {
             logic = new TicTacToeGameLogicHandler();
-            bot = new TicTacToeBot(logic);
+            bot = new TicTacToeMinimaxBot(logic);
         }
 
         [Fact]
