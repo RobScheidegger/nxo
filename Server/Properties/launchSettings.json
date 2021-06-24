@@ -11,7 +11,7 @@
     "IIS Express": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:62442/tictactoe/test/player1",
+      "launchUrl": "http://localhost:62442/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

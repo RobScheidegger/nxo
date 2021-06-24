@@ -79,7 +79,7 @@ namespace NXO.Server.Modules.TicTacToe
             }
             else
             {
-                await Clients.Client(Context.ConnectionId).SendAsync("Error", "Could not start game.");
+                await Clients.Client(Context.ConnectionId).SendAsync("Error", $"Could not start game: {result.Message}");
             }
         }
 

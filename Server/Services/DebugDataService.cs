@@ -14,6 +14,7 @@ namespace NXO.Server.Services
 {
     public class DebugDataService : IHostedService
     {
+        private const bool IsEnabled = false; 
         private readonly IRepository<TicTacToeGameStatus> tictactoeGames;
         private readonly Dictionary<string, IModuleManager> modules;
         public DebugDataService(IRepository<TicTacToeGameStatus> games, IEnumerable<IModuleManager> managers)
@@ -24,7 +25,8 @@ namespace NXO.Server.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            
+            if (!IsEnabled)
+                return;
             var tictactoe = modules["tictactoe"];
             var testGame = new TicTacToeGameStatus()
             {

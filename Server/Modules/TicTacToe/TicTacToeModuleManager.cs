@@ -13,6 +13,8 @@ namespace NXO.Server.Modules
 {
     public class TicTacToeModuleManager : IModuleManager
     {
+        private const int MaximumBoardUnits = 2000;
+
         private readonly IGuidProvider guid;
         private readonly IRepository<TicTacToeGameStatus> gameStatusRepository;
         private readonly Dictionary<string, ITicTacToeBot> bots;
@@ -160,6 +162,16 @@ namespace NXO.Server.Modules
         public async Task<StartGameResult> StartGame(string LobbyCode)
         {
             var rand = new Random();
+            var status = await gameStatusRepository.Find(LobbyCode);
+            if(Math.Pow(status.BoardSize, status.Dimensions) > MaximumBoardUnits)
+            {
+                return new StartGameResult()
+                {
+                    Success = false,
+                    Message = $"Size of the board exceeds the maximum: {MaximumBoardUnits}"
+                };
+            }
+
             await gameStatusRepository.Update(LobbyCode, g =>
             {
                 var startingPlayer = g.Players.ElementAt(rand.Next(0, g.PlayerCount));

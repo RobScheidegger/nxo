@@ -9,7 +9,7 @@
 <div class="container">
     @if (ErrorMessage != null)
     {
-        <div class="alert alert-error">
+        <div class="alert alert-danger">
             @ErrorMessage
         </div>
     }
@@ -152,7 +152,7 @@
         hubConnection.On<TicTacToeGameStatus>("UpdatePlayers", HandleUpdatePlayers);
         hubConnection.On("GameStarting", () => navigation.NavigateTo($"tictactoe/{LobbyCode}/{PlayerId}"));
         hubConnection.On<TicTacToeGameStatus>("UpdateSettings", HandleUpdateSettings);
-        hubConnection.On<string>("ErrorMessage", error => ErrorMessage = error);
+        hubConnection.On<string>("Error", HandleError);
 
         await hubConnection.StartAsync();
 
@@ -192,6 +192,11 @@
         Status.Nickname = updatedStatus.Nickname;
         Status.BoardSize = updatedStatus.BoardSize;
         Status.Dimensions = updatedStatus.Dimensions;
+        StateHasChanged();
+    }
+    public void HandleError(string error)
+    {
+        ErrorMessage = error;
         StateHasChanged();
     }
     public async void SavePlayerData()
