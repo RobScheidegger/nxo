@@ -127,6 +127,20 @@ namespace NXO.Server.Modules
             }
         }
 
+        internal async Task<bool> RemovePlayer(RemovePlayerRequest request)
+        {
+            var game = await gameStatusRepository.Find(request.LobbyCode);
+            if (game.HostPlayerId != request.RequestPlayerId)
+                return false;
+
+            await gameStatusRepository.Update(request.LobbyCode, game =>
+            {
+                game.Players = game.Players.Where(i => i.PlayerId != request.RemovePlayerId).ToList();
+            });
+
+            return true;
+        }
+
         private async Task CompleteGame(string lobbyCode, TicTacToePlayer winningPlayer)
         {
             await gameStatusRepository.Update(lobbyCode, game =>

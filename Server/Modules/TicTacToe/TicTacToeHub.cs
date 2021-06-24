@@ -93,5 +93,20 @@ namespace NXO.Server.Modules.TicTacToe
             });
             await Clients.Group(LobbyCode).SendAsync("UpdatePlayers", await statusRepository.Find(LobbyCode));
         }
+
+        public async Task RemovePlayer(RemovePlayerRequest request)
+        {
+            var result = await moduleManager.RemovePlayer(request);
+
+            if (result)
+            {
+                var gameStatus = await statusRepository.Find(request.LobbyCode);
+                await Clients.Group(request.LobbyCode).SendAsync("UpdatePlayers", gameStatus);
+            }
+            else
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync("Error", $"Could not remove player.");
+            }
+        }
     }
 }

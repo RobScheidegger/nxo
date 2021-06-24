@@ -94,7 +94,7 @@
                     <table class="table table-striped table-hover">
                         <thead>
                             <tr>
-                                <th>Id</th>
+                                <th></th>
                                 <th>Nickname</th>
                                 <th>Type</th>
                                 <th>Token</th>
@@ -106,7 +106,12 @@
                                 @foreach (var player in Status.Players.Where(i => i != null))
                                 {
                                     <tr>
-                                        <td>@player.PlayerId</td>
+                                        <td>
+                                            @if(Status.HostPlayerId == PlayerId)
+                                            {
+                                                <a class="text-danger" @onclick="() => RemovePlayer(player.PlayerId)">x</a>
+                                            }
+                                        </td>
                                         <td>@player.Nickname</td>
                                         <td>@(player.Bot ? "Bot" : "Human")</td>
                                         <td>@player.Token</td>
@@ -202,5 +207,15 @@
     public async void SavePlayerData()
     {
         await hubConnection.SendAsync("SavePlayerData", LobbyCode, PlayerId, Nickname, Token);
+    }
+    public async void RemovePlayer(string RemovePlayerId)
+    {
+        var request = new RemovePlayerRequest()
+        {
+            LobbyCode = LobbyCode,
+            RemovePlayerId = RemovePlayerId,
+            RequestPlayerId = PlayerId
+        };
+        await hubConnection.SendAsync("RemovePlayer", request);
     }
 }
