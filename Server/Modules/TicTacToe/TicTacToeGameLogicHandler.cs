@@ -95,24 +95,6 @@ namespace NXO.Server.Modules.TicTacToe
                         return hashes.All(playerMovesHash.Contains);
                     }));
         }
-        public int GetWinCount(IEnumerable<List<int>> playerMoves, int dimension, int boardSize)
-        {
-            var vectors = GetVectorsForDimension(dimension);
-            var playerEdgeMoves = playerMoves.Where(move =>
-                Enumerable.Range(0, dimension).Select(i => move[i]).Any(i => i == 0));
-            var playerMovesHash = HashMoves(playerMoves);
-
-            return playerEdgeMoves
-                .Sum(move => vectors
-                    .Count(vector =>
-                    {
-                        var moveCheck = Enumerable.Range(0, boardSize).Select(n => MultiplyThenAdd(move, n, vector));
-
-                        var hashes = moveCheck.Select(GetHash);
-
-                        return hashes.All(playerMovesHash.Contains);
-                    }));
-        }
         public List<int> MultiplyThenAdd(List<int> array1, int scalar, List<int> array2)
         {
             List<int> result = new(array1.Count);
