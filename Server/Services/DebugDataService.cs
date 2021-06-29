@@ -14,7 +14,7 @@ namespace NXO.Server.Services
 {
     public class DebugDataService : IHostedService
     {
-        private const bool IsEnabled = false; 
+        private const bool IsEnabled = true; 
         private readonly IRepository<TicTacToeGameStatus> tictactoeGames;
         private readonly Dictionary<string, IModuleManager> modules;
         public DebugDataService(IRepository<TicTacToeGameStatus> games, IEnumerable<IModuleManager> managers)

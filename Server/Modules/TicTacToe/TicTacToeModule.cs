@@ -24,6 +24,7 @@ namespace NXO.Shared.Modules
 
             //Register Bots
             services.AddSingleton<ITicTacToeBot, TicTacToeMinimaxBot>();
+            services.AddSingleton<ITicTacToeBot, TicTacToeStaticBot>();
         }
 
     }
