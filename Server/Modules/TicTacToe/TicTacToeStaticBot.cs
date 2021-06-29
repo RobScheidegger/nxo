@@ -18,17 +18,13 @@ namespace NXO.Server.Modules.TicTacToe
                 FindWinningMove,
                 FindBlockingMove,
                 FindForkMove,
-                FindBlockingForkMove,
-                FindCenterMove,
-                FindOppositeCornerMove,
-                FindEmptyCornerMove,
-                FindEmptySideMove
+                FindBlockingForkMove
             };
         }
 
         public string Type => "Static";
 
-        public async Task<TicTacToeMove> GetNextMove(TicTacToeGameStatus GameStatus)
+        public Task<TicTacToeMove> GetNextMove(TicTacToeGameStatus GameStatus)
         {
             TicTacToeBoard board = GameStatus.Board;
             Array startingBoard = logic.GetArrayFromBoard(board);
@@ -52,16 +48,11 @@ namespace NXO.Server.Modules.TicTacToe
                 var foundMove = function(available_moves, GameStatus);
                 if (foundMove != null)
                 {
-                    return foundMove;
+                    return Task.FromResult(foundMove);
                 }
             }
 
-            return new TicTacToeMove()
-            {
-                PlayerId = GameStatus.CurrentPlayerId,
-                LobbyCode = GameStatus.LobbyCode,
-                Path = available_moves.ElementAt(random.Next(available_moves.Count()))
-            }; 
+            return Task.FromResult(FindOptimalMove(available_moves, GameStatus));
         }
 
         public TicTacToeMove FindWinningMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
@@ -93,6 +84,28 @@ namespace NXO.Server.Modules.TicTacToe
 
         public TicTacToeMove FindBlockingMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
         {
+            TicTacToeBoard board = GameStatus.Board;
+            Array startingBoard = logic.GetArrayFromBoard(board);
+            TicTacToePlayer currentPlayer = GameStatus.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First();
+            TicTacToePlayer oppositePlayer = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+
+            var currentPlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
+                arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension);
+            var oppositePlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
+                arr.GetValue(path) as char? == oppositePlayer.Token, board.Dimension);
+            foreach (var move in available_moves)
+            {
+                if (logic.HasPlayerWon(oppositePlayerMoves.Append(move), GameStatus.Dimensions, GameStatus.BoardSize))
+                {
+                    return new TicTacToeMove()
+                    {
+                        PlayerId = GameStatus.CurrentPlayerId,
+                        LobbyCode = GameStatus.LobbyCode,
+                        Path = move
+                    };
+                }
+            }
+
             return null;
         }
         public TicTacToeMove FindForkMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
@@ -105,24 +118,90 @@ namespace NXO.Server.Modules.TicTacToe
             return null;
         }
 
-        public TicTacToeMove FindCenterMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
+        public TicTacToeMove FindOptimalMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
         {
-            return null;
+            TicTacToeBoard board = GameStatus.Board;
+            Array startingBoard = logic.GetArrayFromBoard(board);
+            TicTacToePlayer currentPlayer = GameStatus.Players.Where(p => p.PlayerId == GameStatus.CurrentPlayerId).First();
+            TicTacToePlayer oppositePlayer = GameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
+
+            var currentPlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
+                arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension);
+            var oppositePlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
+                arr.GetValue(path) as char? == oppositePlayer.Token, board.Dimension);
+
+            var boardSize = GameStatus.BoardSize;
+            var dimension = GameStatus.Dimensions;
+
+
+            List<StaticEvalResult> evalMoves = available_moves.Select((v, i) => new StaticEvalResult()
+            {
+                Score = -5000,
+                Move = v,
+                Index = i
+            }).ToList();
+
+            foreach (var move in evalMoves)
+            {
+                move.Score = StaticEvaluationScore(currentPlayerMoves.Append(move.Move), oppositePlayerMoves, dimension, boardSize);
+            }
+
+            int scoreMax = evalMoves.Max((i) => i.Score);
+            return new TicTacToeMove()
+            {
+                PlayerId = GameStatus.CurrentPlayerId,
+                LobbyCode = GameStatus.LobbyCode,
+                Path = evalMoves.First((i) => i.Score == scoreMax).Move
+            };
+           
         }
 
-        public TicTacToeMove FindOppositeCornerMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
+        private int StaticEvaluationScore(IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int dimension, int boardSize)
         {
-            return null;
-        }
+            var currentPlayerMovesHash = logic.HashMoves(currentPlayerMoves);
+            var oppositePlayerMovesHash = logic.HashMoves(oppositePlayerMoves);
+            var vectors = logic.GetVectorsForDimension(dimension);
 
-        public TicTacToeMove FindEmptyCornerMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
-        {
-            return null;
-        }
 
-        public TicTacToeMove FindEmptySideMove(IEnumerable<List<int>> available_moves, TicTacToeGameStatus GameStatus)
-        {
-            return null;
+            //From each move for the current player, check each vector to see if there is a winning path
+            int playerPaths = currentPlayerMoves.Select(move =>
+            {
+                return vectors.Count(vector =>
+                {
+                    var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(move, n, vector));
+
+                    var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
+
+                    return !hashes.Any(oppositePlayerMovesHash.Contains) && (hashes.Count() == boardSize);
+                });
+            }).Sum();
+
+            int count = 0;
+            //From each move for the opposite player, check if there is a winning path
+            int oppositePaths = oppositePlayerMoves.Select(move =>
+            {
+                return vectors.Count(vector =>
+                {
+                    var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(move, n, vector));
+
+                    var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
+
+                    count += hashes.Where(oppositePlayerMovesHash.Contains).Count() >= boardSize - 1 && !hashes.Any(currentPlayerMovesHash.Contains) ? 1 : 0;
+                    return !hashes.Any(currentPlayerMovesHash.Contains) && (hashes.Count() == boardSize);
+                });
+            }).Sum();
+            if (count >= 2)
+            {
+                oppositePaths += 100;
+            }
+            return playerPaths - oppositePaths;
         }
+    }
+
+    public class StaticEvalResult
+    {
+        public List<int> Move { get; set; }
+        public int Score { get; set; }
+        public int Index { get; set; }
     }
 }

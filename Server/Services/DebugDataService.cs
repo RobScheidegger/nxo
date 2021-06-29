@@ -115,7 +115,7 @@ namespace NXO.Server.Services
                         Nickname = "Test Bot",
                         Token = 'o',
                         Bot = true,
-                        BotType = "Minimax"
+                        BotType = "Static"
                     }
                 },
                 BoardSize = 4,
