@@ -109,7 +109,7 @@
                                         <td>
                                             @if(Status.HostPlayerId == PlayerId)
                                             {
-                                                <a class="text-danger" @onclick="() => RemovePlayer(player.PlayerId)">x</a>
+                                                <a class="text-danger" @onclick="() => RemovePlayer(player.PlayerId)" href="#">x</a>
                                             }
                                         </td>
                                         <td>@player.Nickname</td>
@@ -187,7 +187,17 @@
     public void HandleUpdatePlayers(TicTacToeGameStatus updatedStatus)
     {
         Status.Players = updatedStatus.Players;
-        StateHasChanged();
+        if(!Status.Players.Any(i => i.PlayerId == PlayerId))
+        {
+            //Player has been removed from the lobby
+            navigation.NavigateTo("/");
+        }
+        else
+        {
+            StateHasChanged();
+        }
+        
+
     }
     public void HandleUpdateSettings(TicTacToeGameStatus updatedStatus)
     {
