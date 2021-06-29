@@ -10,8 +10,8 @@ More mathematical and gameplay details can be found on the [About](https://nxopr
 
 ## The Team
 
-<b>Robert Scheidegger</b> - 
+<b>Robert Scheidegger :rocket::bulb:</b> - Project lead and full-stack engineer
 
-<b>James Billings</b> - 
+<b>James Billings :boom: :star: </b> - Bot algorithms and AI
 
-<b>Erik Swanson</b> - 
+<b>Erik Swanson :black_nib::triangular_ruler: </b> - Design and CSS Wizardry :crystal_ball:  
