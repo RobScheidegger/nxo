@@ -174,7 +174,7 @@ namespace NXO.Server.Modules.TicTacToe
             return sum;
             static int Pow(int bas, int exp)
             {
-                if(exponentCache.ContainsKey((bas, exp)))
+                if(!exponentCache.ContainsKey((bas, exp)))
                 {
                     exponentCache[(bas, exp)] = Enumerable
                                                   .Repeat(bas, exp)

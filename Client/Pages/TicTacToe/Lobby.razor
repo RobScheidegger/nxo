@@ -90,7 +90,10 @@
                     <div class="card-body">
                         <div class="form-group">
                             <label class="control-label">Lobby Name</label>
-                            <InputSelect class="form-control" @bind-Value="@BotType" a />
+                            <select class="form-control" @bind="@BotType">
+                                <option value="Minimax" selected>Minimax</option>
+                                <option value="Static">Static</option>
+                            </select>
                         </div>
                         <bustton class="btn btn-secondary ma-2" @onclick="AddBot">Add Bot</bustton>
                     </div>
@@ -172,7 +175,7 @@
     public char Token { get; set; }
     private const int TimerInterval = 1000;
     private HubConnection hubConnection;
-    private string BotType { get; set; } = "minimax";
+    private string BotType { get; set; } = "Minimax";
 
     protected override async Task OnParametersSetAsync()
     {

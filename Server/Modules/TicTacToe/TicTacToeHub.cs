@@ -57,6 +57,11 @@ namespace NXO.Server.Modules.TicTacToe
             }
         }
 
+        public async void RefreshBoard(string lobbyCode)
+        {
+            await Clients.Group(lobbyCode).SendAsync("UpdateBoard", await statusRepository.Find(lobbyCode));
+        }
+
         public async Task SaveSettings(TicTacToeGameStatus status)
         {
             var result = await moduleManager.SaveSettingsAsync(status);

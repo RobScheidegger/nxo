@@ -7,37 +7,37 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace NXO.UnitTests.TicTacToe
-{
-    public class TicTacToeBotTests
-    {
-        private readonly TicTacToeMinimaxBot bot;
-        private readonly TicTacToeGameLogicHandler logic;
-        public TicTacToeBotTests()
-        {
-            logic = new TicTacToeGameLogicHandler();
-            bot = new TicTacToeMinimaxBot(logic);
-        }
+namespace NXO.UnitTests.TicTacToe;
 
-        [Fact]
-        public async void Bot_3x3_ForcedMove_Vertical()
+public class TicTacToeBotTests
+{
+    private readonly TicTacToeMinimaxBot bot;
+    private readonly TicTacToeGameLogicHandler logic;
+    public TicTacToeBotTests()
+    {
+        logic = new TicTacToeGameLogicHandler();
+        bot = new TicTacToeMinimaxBot(logic);
+    }
+
+    [Fact]
+    public async void Bot_3x3_ForcedMove_Vertical()
+    {
+        //Arrange
+        var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
         {
-            //Arrange
-            var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
-            {
                 {'x', null, null},
                 {null, null, 'o'},
                 {null, null, 'o' }
-            });
-            var gameStatus = new TicTacToeGameStatus()
-            {
-                Board = board,
-                CurrentPlayerId = "bot",
-                BoardSize = 3,
-                Dimensions = 2,
-                LobbyCode = "test",
-                MaximumPlayers = 2,
-                Players = new List<TicTacToePlayer>()
+        });
+        var gameStatus = new TicTacToeGameStatus()
+        {
+            Board = board,
+            CurrentPlayerId = "bot",
+            BoardSize = 3,
+            Dimensions = 2,
+            LobbyCode = "test",
+            MaximumPlayers = 2,
+            Players = new List<TicTacToePlayer>()
                 {
                     new TicTacToePlayer()
                     {
@@ -52,32 +52,32 @@ namespace NXO.UnitTests.TicTacToe
                         Token = 'x'
                     }
                 }
-            };
-            //Act
-            var move = await bot.GetNextMove(gameStatus);
-            //Assert
-            Assert.Equal(move.Path.ToArray(), new int[] { 0, 2 });
-        }
+        };
+        //Act
+        var move = await bot.GetNextMove(gameStatus);
+        //Assert
+        Assert.Equal(move.Path.ToArray(), new int[] { 0, 2 });
+    }
 
-        [Fact]
-        public async void Bot_3x3_ForcedMove_Horizontal()
+    [Fact]
+    public async void Bot_3x3_ForcedMove_Horizontal()
+    {
+        //Arrange
+        var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
         {
-            //Arrange
-            var board = TicTacToeTestUtilities.Get2DBoard(new char?[,]
-            {
                 {'x', null, null},
                 {null, 'o', 'o'},
                 {null, null, 'x' }
-            });
-            var gameStatus = new TicTacToeGameStatus()
-            {
-                Board = board,
-                CurrentPlayerId = "bot",
-                BoardSize = 3,
-                Dimensions = 2,
-                LobbyCode = "test",
-                MaximumPlayers = 2,
-                Players = new List<TicTacToePlayer>()
+        });
+        var gameStatus = new TicTacToeGameStatus()
+        {
+            Board = board,
+            CurrentPlayerId = "bot",
+            BoardSize = 3,
+            Dimensions = 2,
+            LobbyCode = "test",
+            MaximumPlayers = 2,
+            Players = new List<TicTacToePlayer>()
                 {
                     new TicTacToePlayer()
                     {
@@ -92,27 +92,26 @@ namespace NXO.UnitTests.TicTacToe
                         Token = 'o'
                     }
                 }
-            };
-            //Act
-            var move = await bot.GetNextMove(gameStatus);
-            //Assert
-            Assert.Equal(move.Path.ToArray(), new int[] { 1, 0 });
-        }
-        /*
-        [Fact]
-        public void Bot_3x3_DetermineMinimaxScore()
-        {
-            //Arrange
-            var board = new char?[,]
-            {
-                {'x', 'o', null},
-                {null, 'o', 'x'},
-                {'x', 'o', null }
-            };
-            //Act
-            var score = bot.Minimax(;
-            //Assert
-            Assert.Equal(10,score);
-        }*/
+        };
+        //Act
+        var move = await bot.GetNextMove(gameStatus);
+        //Assert
+        Assert.Equal(move.Path.ToArray(), new int[] { 1, 0 });
     }
+    /*
+    [Fact]
+    public void Bot_3x3_DetermineMinimaxScore()
+    {
+        //Arrange
+        var board = new char?[,]
+        {
+            {'x', 'o', null},
+            {null, 'o', 'x'},
+            {'x', 'o', null }
+        };
+        //Act
+        var score = bot.Minimax(;
+        //Assert
+        Assert.Equal(10,score);
+    }*/
 }
