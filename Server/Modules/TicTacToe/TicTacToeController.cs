@@ -16,6 +16,6 @@ namespace NXO.Server.Modules
         public TicTacToeController(IEnumerable<IModuleManager> modules) : base(modules)
         {
 
-        }   
+        }
     }
 }

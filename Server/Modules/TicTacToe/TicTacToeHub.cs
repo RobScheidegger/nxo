@@ -108,5 +108,12 @@ namespace NXO.Server.Modules.TicTacToe
                 await Clients.Client(Context.ConnectionId).SendAsync("Error", $"Could not remove player.");
             }
         }
+        public async Task AddBot(string lobbyCode, string botType)
+        {
+            await moduleManager.AddBot(lobbyCode, botType);
+            var status = await statusRepository.Find(lobbyCode);
+            await Clients.Group(lobbyCode).SendAsync("UpdateSettings", status);
+            await Clients.Group(lobbyCode).SendAsync("UpdatePlayers", status);
+        }
     }
 }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NXO.Client.Pages;
 using NXO.Client.Pages.TicTacToe;
+using NXO.Shared.Modules.TicTacToe;
 
 namespace NXO.Client
 {
@@ -20,6 +21,7 @@ namespace NXO.Client
             builder.RootComponents.Add<App>("app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddScoped<TicTacToeConfiguration>();
 
             await builder.Build().RunAsync();
         }

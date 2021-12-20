@@ -8,7 +8,8 @@ namespace NXO.Server.Modules.TicTacToe
 {
     public class TicTacToeGameLogicHandler
     {
-        private readonly int[] Primes = { 2,3,5,7,11,13 };
+        private static readonly int[] Primes = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 };
+        private static readonly Dictionary<(int bas, int pow), int> exponentCache = new();
         private Dictionary<int, IEnumerable<List<int>>> VectorCache { get; set; } 
         public TicTacToeGameLogicHandler()
         {
@@ -52,12 +53,6 @@ namespace NXO.Server.Modules.TicTacToe
                         {
                             resultList.RemoveAt(i);
                         }
-                        /*
-                        else if(foundNegative != null)
-                        {
-                            resultList.RemoveAt(i);
-                        }
-                        */
                         else
                             i++;
                     }
@@ -179,9 +174,13 @@ namespace NXO.Server.Modules.TicTacToe
             return sum;
             static int Pow(int bas, int exp)
             {
-                return Enumerable
-                      .Repeat(bas, exp)
-                      .Aggregate(1, (a, b) => a * b);
+                if(exponentCache.ContainsKey((bas, exp)))
+                {
+                    exponentCache[(bas, exp)] = Enumerable
+                                                  .Repeat(bas, exp)
+                                                  .Aggregate(1, (a, b) => a * b);
+                }
+                return exponentCache[(bas, exp)];
             }
         }
 

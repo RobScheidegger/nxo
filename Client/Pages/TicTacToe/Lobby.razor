@@ -2,6 +2,7 @@
 @implements IDisposable
 @inject HttpClient Http
 @inject NavigationManager navigation
+@inject TicTacToeConfiguration config
 @using System.Timers
 @using Microsoft.AspNetCore.SignalR.Client
 
@@ -80,6 +81,21 @@
                     }
                 </div>
             </div>
+            @if(Status is not null && Status.HostPlayerId == PlayerId)
+            {
+                <div class="card shadow">
+                    <div class="card-header">
+                        Bots
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="control-label">Lobby Name</label>
+                            <InputSelect class="form-control" @bind-Value="@BotType" a />
+                        </div>
+                        <bustton class="btn btn-secondary ma-2" @onclick="AddBot">Add Bot</bustton>
+                    </div>
+                </div>
+            }
         </div>
         <div class="col-lg-8">
             <div class="card shadow">
@@ -87,13 +103,23 @@
                     Players
                 </div>
                 <div class="card-body">
-                    <div class="form-inline">
-                        <div class="input-group">
-                            <span class="input-group-prepend">Nickname: </span>
-                            <input class="form-control" @bind-value="@Nickname" @bind-value:event="oninput" @onkeyup="SavePlayerData" />
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="input-group">
+                                 <div class="input-group-prepend">
+                                     <span class="input-group-text">Nickname: </span>
+                                 </div>
+                                <input class="form-control" @bind-value="@Nickname" @bind-value:event="oninput" @onkeyup="SavePlayerData" />
+                            </div>
                         </div>
-                        
-                        <input class="form-control" @bind-value="@Token" @bind-value:event="oninput" @onkeyup="SavePlayerData" />
+                        <div class="col-lg-4">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                     <span class="input-group-text">Token: </span>
+                                </div>
+                                <input class="form-control" @bind-value="@Token" @bind-value:event="oninput" @onkeyup="SavePlayerData" />
+                            </div>
+                        </div>
                     </div>
                     <table class="table table-striped table-hover">
                         <thead>
@@ -117,7 +143,7 @@
                                             }
                                         </td>
                                         <td>@player.Nickname</td>
-                                        <td>@(player.Bot ? "Bot" : "Human")</td>
+                                        <td>@(player.Bot ? $"Bot ({player.BotType})" : "Human")</td>
                                         <td>@player.Token</td>
                                     </tr>
                                 }
@@ -146,6 +172,7 @@
     public char Token { get; set; }
     private const int TimerInterval = 1000;
     private HubConnection hubConnection;
+    private string BotType { get; set; } = "minimax";
 
     protected override async Task OnParametersSetAsync()
     {
@@ -200,8 +227,6 @@
         {
             StateHasChanged();
         }
-        
-
     }
     public void HandleUpdateSettings(TicTacToeGameStatus updatedStatus)
     {
@@ -231,5 +256,9 @@
             RequestPlayerId = PlayerId
         };
         await hubConnection.SendAsync("RemovePlayer", request);
+    }
+    public async void AddBot()
+    {
+        await hubConnection.SendAsync("AddBot", LobbyCode, BotType);
     }
 }

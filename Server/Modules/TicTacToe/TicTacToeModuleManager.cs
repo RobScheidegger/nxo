@@ -241,5 +241,19 @@ namespace NXO.Server.Modules
             var game = await gameStatusRepository.Find(LobbyCode);
             return game != null && game.PlayerCount < game.MaximumPlayers;
         }
+
+        public async Task AddBot(string lobbyCode, string botType)
+        {
+            var bot = new TicTacToePlayer()
+            {
+                Bot = true,
+                BotType = botType,
+                Nickname = "Bot",
+                PlayerId = guid.New(),
+                Token = GetNextToken()
+            };
+
+            await gameStatusRepository.Update(lobbyCode, status => status.Players = status.Players.Append(bot));
+        }
     }
 }
