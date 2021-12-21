@@ -11,11 +11,12 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
 {
     private readonly TicTacToeGameLogicHandler logic;
     private readonly Random random = new();
-    private const int timeout = 10;
+    private const int timeout = 30;
 
     private const float POSITIVE_INFINITY = float.MaxValue;
     private const float NEGATIVE_INFINITY = -float.MaxValue;
-    private const int MAX_DEPTH = 2;
+    private const float TIME_DECAY = 0.95f;
+    private const int MAX_DEPTH = 3;
 
     public string Type => "Minimax";
 
