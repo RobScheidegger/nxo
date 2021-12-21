@@ -176,13 +176,6 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         return currentPlayerScore / (currentPlayerScore + oppositePlayerScore + 1f);
     }
 }
-public class MinimaxResult
-{
-    public int DepthReached { get; set; }
-    public List<int> Move { get; set; }
-    public float Score { get; set; }
-    public int Index { get; set; }
-}
 public class TrackedMove
 {
     public bool Available { get; set; }
