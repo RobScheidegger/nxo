@@ -16,7 +16,7 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
     private const float POSITIVE_INFINITY = float.MaxValue;
     private const float NEGATIVE_INFINITY = -float.MaxValue;
     private const float TIME_DECAY = 0.95f;
-    private const int MAX_DEPTH = 3;
+    private const int MAX_DEPTH = 2;
 
     public string Type => "Minimax";
 
@@ -85,15 +85,16 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         bool maximizing = currentPlayer.PlayerId == gameStatus.CurrentPlayerId;
         if(logic.HasPlayerWon(currentPlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize))
         {
-            return new(maximizing ? 1 : -1, null);
+            return new((maximizing ? 1 : -1) * (float)Math.Pow(TIME_DECAY, depth), null);
         }
         else if (logic.HasPlayerWon(oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize))
         {
-            return new(maximizing ? -1 : 1, null);
+            return new((maximizing ? -1 : 1) * (float)Math.Pow(TIME_DECAY, depth), null);
         }
         if(depth >= maxDepth)
         {
-            return new(StaticEvaluationScore(currentPlayerMoves, oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize), null);
+            return new(StaticEvaluationScore(currentPlayerMoves, oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize) 
+                        * (float)Math.Pow(TIME_DECAY, depth), null);
         }
         
         TicTacToePlayer oppositionPlayer = gameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
