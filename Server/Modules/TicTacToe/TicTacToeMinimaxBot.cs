@@ -11,12 +11,11 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
 {
     private readonly TicTacToeGameLogicHandler logic;
     private readonly Random random = new();
-    private const int defaultMaxDepth = 7;
-    private const int timeout = 30;
-    private const int winningScore = 1000;
+    private const int timeout = 10;
 
     private const float POSITIVE_INFINITY = float.MaxValue;
     private const float NEGATIVE_INFINITY = -float.MaxValue;
+    private const int MAX_DEPTH = 2;
 
     public string Type => "Minimax";
 
@@ -38,189 +37,109 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         var oppositePlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
             arr.GetValue(path) as char? == oppositePlayer.Token, board.Dimension);
 
-        var available_moves = MoveOrder(logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) is null, board.Dimension), currentPlayerMoves, oppositePlayerMoves, GameStatus.Dimensions, GameStatus.BoardSize);
+        var available_moves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) is null, board.Dimension);
         bool hasMoved = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension).Any();
         if (!available_moves.Any())
         {
             return null;
         }
 
-        List<MinimaxResult> minimaxMoves = available_moves.Select((v, i) => new MinimaxResult()
-        {
-            DepthReached = 0,
-            Score = -5000,
-            Move = v,
-            Index = i
-        }).ToList();
-
         var trackedAvailableMoves = available_moves.Select(i => new TrackedMove()
-        {
-            Available = true,
-            Move = i
-        }).ToList();
+            {
+                Available = true,
+                Move = i
+            }).ToList();
 
         var cancelToken = new CancellationTokenSource();
-        var task = Task.Run(() =>
-        {
-            var forcedMove = false;
-            for (int d = 0; d < defaultMaxDepth + 1; d++)
-            {
-                foreach (var move in minimaxMoves.OrderBy(i => i.Index))
-                {
-                    for (int j = 0; j < d + 1; j++)
-                    {
-                        move.Score = Minimax(
-                            availableMoves: ref trackedAvailableMoves,
-                            currentPlayerMoves: oppositePlayerMoves,
-                            oppositePlayerMoves: currentPlayerMoves,
-                            depth: 0,
-                            maxDepth: j,
-                            gameStatus: GameStatus,
-                            currentPlayer: currentPlayer,
-                            alpha: POSITIVE_INFINITY,
-                            beta: NEGATIVE_INFINITY,
-                            firstMove: trackedAvailableMoves[move.Index]);
-                        move.DepthReached = j;
-                        if (cancelToken.Token.IsCancellationRequested || forcedMove)
-                        {
-                            break;
-                        }
-                    }
-                }
-                var maxScore = minimaxMoves.Max(i => i.Score);
-                forcedMove = minimaxMoves.Where(i => i.Score == maxScore).Count() == 1 || maxScore >= 300;
-                if (cancelToken.Token.IsCancellationRequested || forcedMove)
-                {
-                    break;
-                }
-
-                if (d == 1)
-                {
-                    minimaxMoves = minimaxMoves.OrderBy(i => i.Score).ToList();
-                    minimaxMoves.RemoveRange(0, minimaxMoves.Count - 15);
-                }
-
-            }
-        }, cancelToken.Token);
+        var task = Task.Run(() => Minimax(
+                    availableMoves: ref trackedAvailableMoves,
+                    currentPlayerMoves: currentPlayerMoves,
+                    oppositePlayerMoves: oppositePlayerMoves,
+                    depth: 0,
+                    maxDepth: MAX_DEPTH,
+                    gameStatus: GameStatus,
+                    currentPlayer: currentPlayer,
+                    alpha: NEGATIVE_INFINITY,
+                    beta: POSITIVE_INFINITY), cancelToken.Token);
 
         bool isCompletedSuccessfully = task.Wait(TimeSpan.FromSeconds(timeout));
+        var resultMove = task.Result;
         if (!isCompletedSuccessfully)
         {
             cancelToken.Cancel();
-        }
-
-        var maxScore = minimaxMoves.Max(i => i.Score);
-        var maxScoreCandidates = minimaxMoves.Where(i => i.Score == maxScore);
-        MinimaxResult finalResult;
-        if (maxScoreCandidates.Count() == 0)
-            finalResult = minimaxMoves.First();
-        else
-        {
-            var randIndex = random.Next(0, maxScoreCandidates.Count());
-            finalResult = maxScoreCandidates.ElementAt(randIndex);
+            resultMove = null; // TODO: Select random move
         }
         TicTacToeMove bestMove = new()
         {
             PlayerId = GameStatus.CurrentPlayerId,
             LobbyCode = GameStatus.LobbyCode,
-            Path = finalResult.Move
+            Path = resultMove.Move
         };
         return Task.FromResult(bestMove);
     }
 
-    public IEnumerable<List<int>> MoveOrder(IEnumerable<List<int>> available_moves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int dimension, int boardSize)
-    {
-        var currentPlayerMovesHash = logic.HashMoves(currentPlayerMoves);
-        var oppositePlayerMovesHash = logic.HashMoves(oppositePlayerMoves);
-        IEnumerable<MoveScore> moveScores = available_moves.Select(move => new MoveScore() { Move = move, Score = 0 }).ToArray();
-        var vectors = logic.GetVectorsForDimension(dimension);
-        foreach (var moveScore in moveScores)
-        {
-            int count = 0;
-            foreach (var vector in vectors)
-            {
-                var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(moveScore.Move, n, vector));
-                var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
-                count += hashes.Count(hash => currentPlayerMovesHash.Contains(hash) || oppositePlayerMovesHash.Contains(hash));
-            }
-            moveScore.Score = count;
-        }
-
-
-        return moveScores.OrderByDescending((moveScore) => moveScore.Score).Select(moveScore => moveScore.Move);
-    }
-
-    public float Minimax(ref List<TrackedMove> availableMoves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves,
-        int depth, int maxDepth, TicTacToeGameStatus gameStatus, TicTacToePlayer currentPlayer, float alpha, float beta, TrackedMove firstMove = null)
+    public MoveScore Minimax(ref List<TrackedMove> availableMoves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves,
+        int depth, int maxDepth, TicTacToeGameStatus gameStatus, TicTacToePlayer currentPlayer, float alpha, float beta)
     {
         bool maximizing = currentPlayer.PlayerId == gameStatus.CurrentPlayerId;
         if(logic.HasPlayerWon(currentPlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize))
         {
-            return 1;
+            return new(maximizing ? 1 : -1, null);
         }
         else if (logic.HasPlayerWon(oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize))
         {
-            return -1;
+            return new(maximizing ? -1 : 1, null);
         }
-        char currentToken = currentPlayer.Token;
+        if(depth >= maxDepth)
+        {
+            return new(StaticEvaluationScore(currentPlayerMoves, oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize), null);
+        }
+        
         TicTacToePlayer oppositionPlayer = gameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
-        float bestVal = 0;
 
-        StaticEvaluationScore(currentPlayerMoves, oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize);
-        
-        if (maximizing) // MAX
+        MoveScore bestMove = new(maximizing ? NEGATIVE_INFINITY : POSITIVE_INFINITY, null);
+        foreach (var move in availableMoves.Where(i => i.Available))
         {
-            IEnumerable<TrackedMove> move_enumerable = firstMove == null ? availableMoves.Where(i => i.Available) : new List<TrackedMove> { firstMove };
-            foreach (var move in move_enumerable)
+            move.Available = false;
+            var subtreeBest = Minimax(
+                availableMoves: ref availableMoves,
+                currentPlayerMoves: oppositePlayerMoves,
+                oppositePlayerMoves: currentPlayerMoves.Append(move.Move),
+                depth: depth + 1,
+                maxDepth: maxDepth,
+                gameStatus: gameStatus,
+                currentPlayer: oppositionPlayer,
+                alpha: alpha,
+                beta: beta);
+            move.Available = true;
+            if (maximizing)
             {
-                move.Available = false;
-                bestVal = Math.Max(bestVal, Minimax(
-                    availableMoves: ref availableMoves,
-                    currentPlayerMoves: oppositePlayerMoves,
-                    oppositePlayerMoves: currentPlayerMoves.Append(move.Move),
-                    depth: depth + 1,
-                    maxDepth: maxDepth,
-                    gameStatus: gameStatus,
-                    currentPlayer: oppositionPlayer,
-                    alpha: alpha,
-                    beta: beta));
-
-                alpha = Math.Max(alpha, bestVal);
-                move.Available = true;
-                if (beta <= alpha)
+                if(subtreeBest.Score > bestMove.Score)
                 {
-                    break;
+                    bestMove.Score = subtreeBest.Score;
+                    bestMove.Move = move.Move;
+                    alpha = Math.Max(alpha, bestMove.Score);
+                }
+                if(bestMove.Score >= beta)
+                {
+                    return bestMove;
                 }
             }
-
-        }
-        else // MIN
-        {
-            IEnumerable<TrackedMove> move_enumerable = firstMove == null ? availableMoves.Where(i => i.Available) : new List<TrackedMove> { firstMove };
-            foreach (var move in move_enumerable)
+            else
             {
-                move.Available = false;
-                bestVal = Math.Min(bestVal, Minimax(
-                    availableMoves: ref availableMoves,
-                    currentPlayerMoves: oppositePlayerMoves,
-                    oppositePlayerMoves: currentPlayerMoves.Append(move.Move),
-                    depth: depth + 1,
-                    maxDepth: maxDepth,
-                    gameStatus: gameStatus,
-                    currentPlayer: oppositionPlayer,
-                    alpha: alpha,
-                    beta: beta));
-                beta = Math.Min(beta, bestVal);
-                move.Available = true;
-                if (beta <= alpha)
+                if (subtreeBest.Score < bestMove.Score)
                 {
-                    break;
+                    bestMove.Score = subtreeBest.Score;
+                    bestMove.Move = move.Move;
+                    beta = Math.Min(beta, bestMove.Score);
+                }
+                if (bestMove.Score <= alpha)
+                {
+                    return bestMove;
                 }
             }
         }
-        
-
-        return bestVal;
+        return bestMove;
     }
 
     private float StaticEvaluationScore(IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int dimension, int boardSize)
@@ -229,39 +148,32 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         var oppositePlayerMovesHash = logic.HashMoves(oppositePlayerMoves);
         var vectors = logic.GetVectorsForDimension(dimension);
 
-
+        float currentPlayerScore = 0f;
+        float oppositePlayerScore = 0f;
         //From each move for the current player, check each vector to see if there is a winning path
-        int playerPaths = currentPlayerMoves.Select(move =>
+        foreach(var move in currentPlayerMoves)
         {
-            return vectors.Count(vector =>
+            foreach(var vector in vectors)
             {
                 var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(move, n, vector));
-
                 var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
 
-                return !hashes.Any(oppositePlayerMovesHash.Contains) && (hashes.Count() == boardSize);
-            });
-        }).Sum();
-
-        int count = 0;
-        //From each move for the opposite player, check if there is a winning path
-        int oppositePaths = oppositePlayerMoves.Select(move =>
-        {
-            return vectors.Count(vector =>
-            {
-                var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(move, n, vector));
-
-                var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
-
-                count += hashes.Where(oppositePlayerMovesHash.Contains).Count() >= boardSize - 1 && !hashes.Any(currentPlayerMovesHash.Contains) ? 1 : 0;
-                return !hashes.Any(currentPlayerMovesHash.Contains) && (hashes.Count() == boardSize);
-            });
-        }).Sum();
-        if (count >= 2)
-        {
-            oppositePaths += 100;
+                int currentPlayerPositions = hashes.Count(currentPlayerMovesHash.Contains);
+                int oppositePlayerPositions = hashes.Count(oppositePlayerMovesHash.Contains);
+                if(currentPlayerPositions > 0 && oppositePlayerPositions == 0)
+                {
+                    // Current player can win on this path
+                    currentPlayerScore += currentPlayerPositions * currentPlayerPositions;
+                }
+                if(oppositePlayerPositions > 0 && currentPlayerPositions == 0)
+                {
+                    // Opposite player can win on this path.
+                    oppositePlayerScore += oppositePlayerPositions * oppositePlayerPositions;
+                }
+            }
         }
-        return playerPaths - oppositePaths;
+
+        return currentPlayerScore / (currentPlayerScore + oppositePlayerScore + 1f);
     }
 }
 public class MinimaxResult
@@ -279,6 +191,11 @@ public class TrackedMove
 
 public class MoveScore
 {
+    public MoveScore(float score, List<int> move)
+    {
+        Move = move;
+        Score = score; 
+    }
     public List<int> Move { get; set; }
     public float Score { get; set; }
 }

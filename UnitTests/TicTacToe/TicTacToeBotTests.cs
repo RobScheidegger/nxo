@@ -89,29 +89,14 @@ public class TicTacToeBotTests
                     {
                         PlayerId = "bot",
                         Bot = true,
-                        Token = 'o'
+                        Token = 'o',
+                        BotType = "Minimax"
                     }
                 }
         };
         //Act
         var move = await bot.GetNextMove(gameStatus);
         //Assert
-        Assert.Equal(move.Path.ToArray(), new int[] { 1, 0 });
+        Assert.Equal(new int[] { 1, 0 }, move.Path.ToArray());
     }
-    /*
-    [Fact]
-    public void Bot_3x3_DetermineMinimaxScore()
-    {
-        //Arrange
-        var board = new char?[,]
-        {
-            {'x', 'o', null},
-            {null, 'o', 'x'},
-            {'x', 'o', null }
-        };
-        //Act
-        var score = bot.Minimax(;
-        //Assert
-        Assert.Equal(10,score);
-    }*/
 }

@@ -1,5 +1,6 @@
 ﻿using NXO.Shared.Modules;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace NXO.Server.Modules.TicTacToe
     public class TicTacToeGameLogicHandler
     {
         private static readonly int[] Primes = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 };
-        private static readonly Dictionary<(int bas, int pow), int> exponentCache = new();
+        private static readonly ConcurrentDictionary<(int bas, int pow), int> exponentCache = new();
         private Dictionary<int, IEnumerable<List<int>>> VectorCache { get; set; } 
         public TicTacToeGameLogicHandler()
         {
