@@ -96,8 +96,7 @@ public class TicTacToeBotTests
         };
         //Act
         var move = await bot.GetNextMove(gameStatus);
-        var array = move.Path.ToArray();
         //Assert
-        Assert.Equal(new int[] { 1, 0 }, array);
+        Assert.Equal(new int[] { 1, 0 }, move.Path.ToArray());
     }
 }
