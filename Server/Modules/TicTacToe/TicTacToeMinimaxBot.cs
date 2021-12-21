@@ -1,4 +1,5 @@
 ﻿using NXO.Shared.Modules;
+using NXO.Shared.Modules.TicTacToe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,8 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
 
     private const float POSITIVE_INFINITY = float.MaxValue;
     private const float NEGATIVE_INFINITY = -float.MaxValue;
-    private const int MAX_DEPTH = 2;
+    private const float TIME_DECAY = 0.95f;
+    private const int MAX_DEPTH = 3;
 
     public string Type => "Minimax";
 
@@ -36,6 +38,8 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
             arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension);
         var oppositePlayerMoves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) =>
             arr.GetValue(path) as char? == oppositePlayer.Token, board.Dimension);
+
+        HashSet<TicTacToePosition> currentPlayerSet = new HashSet<TicTacToePosition>();
 
         var available_moves = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) is null, board.Dimension);
         bool hasMoved = logic.GetPositionFromBoardWhere(startingBoard, (path, arr) => arr.GetValue(path) as char? == currentPlayer.Token, board.Dimension).Any();
@@ -73,26 +77,26 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         {
             PlayerId = GameStatus.CurrentPlayerId,
             LobbyCode = GameStatus.LobbyCode,
-            Path = resultMove.Move
+            Path = resultMove.Move.Value.Location
         };
         return Task.FromResult(bestMove);
     }
 
-    public MoveScore Minimax(ref List<TrackedMove> availableMoves, IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves,
+    public MoveScore Minimax(ref List<TrackedMove> availableMoves, HashSet<TicTacToePosition> currentPlayerMoves, HashSet<TicTacToePosition> oppositePlayerMoves,
         int depth, int maxDepth, TicTacToeGameStatus gameStatus, TicTacToePlayer currentPlayer, float alpha, float beta)
     {
         bool maximizing = currentPlayer.PlayerId == gameStatus.CurrentPlayerId;
         if(logic.HasPlayerWon(currentPlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize))
         {
-            return new(maximizing ? 1 : -1, null);
+            return new((maximizing ? 1 : -1) * (float)Math.Pow(TIME_DECAY, depth), null);
         }
         else if (logic.HasPlayerWon(oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize))
         {
-            return new(maximizing ? -1 : 1, null);
+            return new((maximizing ? -1 : 1)*(float)Math.Pow(TIME_DECAY, depth), null);
         }
         if(depth >= maxDepth)
         {
-            return new(StaticEvaluationScore(currentPlayerMoves, oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize), null);
+            return new(StaticEvaluationScore(currentPlayerMoves, oppositePlayerMoves, gameStatus.Dimensions, gameStatus.BoardSize) * (float)Math.Pow(TIME_DECAY, depth), null);
         }
         
         TicTacToePlayer oppositionPlayer = gameStatus.Players.Where(p => p.PlayerId != currentPlayer.PlayerId).First();
@@ -101,16 +105,18 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         foreach (var move in availableMoves.Where(i => i.Available))
         {
             move.Available = false;
+            currentPlayerMoves.Add(move.Move);
             var subtreeBest = Minimax(
                 availableMoves: ref availableMoves,
                 currentPlayerMoves: oppositePlayerMoves,
-                oppositePlayerMoves: currentPlayerMoves.Append(move.Move),
+                oppositePlayerMoves: currentPlayerMoves,
                 depth: depth + 1,
                 maxDepth: maxDepth,
                 gameStatus: gameStatus,
                 currentPlayer: oppositionPlayer,
                 alpha: alpha,
                 beta: beta);
+            currentPlayerMoves.Remove(move.Move);
             move.Available = true;
             if (maximizing)
             {
@@ -142,10 +148,8 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         return bestMove;
     }
 
-    private float StaticEvaluationScore(IEnumerable<List<int>> currentPlayerMoves, IEnumerable<List<int>> oppositePlayerMoves, int dimension, int boardSize)
+    private float StaticEvaluationScore(HashSet<TicTacToePosition> currentPlayerMoves, HashSet<TicTacToePosition> oppositePlayerMoves, int dimension, int boardSize)
     {
-        var currentPlayerMovesHash = logic.HashMoves(currentPlayerMoves);
-        var oppositePlayerMovesHash = logic.HashMoves(oppositePlayerMoves);
         var vectors = logic.GetVectorsForDimension(dimension);
 
         float currentPlayerScore = 0f;
@@ -155,11 +159,10 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
         {
             foreach(var vector in vectors)
             {
-                var moveCheck = Enumerable.Range(-boardSize, 2 * boardSize).Select(n => logic.MultiplyThenAdd(move, n, vector));
-                var hashes = moveCheck.Where(i => logic.InBounds(i, boardSize)).Select(logic.GetHash);
+                var moveCheck = logic.GetSpanVectors(boardSize, move, vector);
 
-                int currentPlayerPositions = hashes.Count(currentPlayerMovesHash.Contains);
-                int oppositePlayerPositions = hashes.Count(oppositePlayerMovesHash.Contains);
+                int currentPlayerPositions = moveCheck.Count(currentPlayerMoves.Contains);
+                int oppositePlayerPositions = moveCheck.Count(oppositePlayerMoves.Contains);
                 if(currentPlayerPositions > 0 && oppositePlayerPositions == 0)
                 {
                     // Current player can win on this path
@@ -179,16 +182,16 @@ public class TicTacToeMinimaxBot : ITicTacToeBot
 public class TrackedMove
 {
     public bool Available { get; set; }
-    public List<int> Move { get; set; }
+    public TicTacToePosition Move { get; set; }
 }
 
 public class MoveScore
 {
-    public MoveScore(float score, List<int> move)
+    public MoveScore(float score, TicTacToePosition? move)
     {
         Move = move;
         Score = score; 
     }
-    public List<int> Move { get; set; }
+    public TicTacToePosition? Move { get; set; }
     public float Score { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using NXO.Shared.Modules;
+using NXO.Shared.Modules.TicTacToe;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace NXO.Server.Modules.TicTacToe
     {
         private static readonly int[] Primes = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37 };
         private static readonly ConcurrentDictionary<(int bas, int pow), int> exponentCache = new();
+        private static readonly ConcurrentDictionary<(int BoardSize, int VectorHash, int MoveHash), IEnumerable<TicTacToePosition>> spanVectorCache = new();
         private Dictionary<int, IEnumerable<List<int>>> VectorCache { get; set; } 
         public TicTacToeGameLogicHandler()
         {
@@ -73,24 +75,37 @@ namespace NXO.Server.Modules.TicTacToe
             var playerMoves = GetPositionFromBoardWhere(arrayBoard, (i, arr) => arr.GetValue(i) as char? == playerToken, arrayBoard.Rank);
             return HasPlayerWon(playerMoves, arrayBoard.Rank, arrayBoard.GetLength(0));   
         }
-        public bool HasPlayerWon(IEnumerable<List<int>> playerMoves, int dimension, int boardSize)
+        public bool HasPlayerWon(HashSet<TicTacToePosition> playerMoves, int dimension, int boardSize)
         {
             var vectors = GetVectorsForDimension(dimension);
             var playerEdgeMoves = playerMoves.Where(move =>
-                Enumerable.Range(0, dimension).Select(i => move[i]).Any(i => i == 0));
-            var playerMovesHash = HashMoves(playerMoves);
+                Enumerable.Range(0, dimension).Select(i => move.Location[i]).Any(i => i == 0));
 
             return playerEdgeMoves
                 .Any(move => vectors
                     .Any(vector =>
                     {
-                        var moveCheck = Enumerable.Range(0, boardSize).Select(n => MultiplyThenAdd(move, n, vector));
+                        IEnumerable<TicTacToePosition> moveCheck = GetSpanVectors(boardSize, move, vector);
 
-                        var hashes = moveCheck.Select(GetHash);
-
-                        return hashes.All(playerMovesHash.Contains);
+                        return moveCheck.Count() == boardSize && moveCheck.All(playerMoves.Contains);
                     }));
         }
+
+        public IEnumerable<TicTacToePosition> GetSpanVectors(int boardSize, TicTacToePosition move, List<int> vector)
+        {
+            var key = (boardSize, GetHash(vector), move.Hash);
+            if (!spanVectorCache.ContainsKey(key))
+            {
+                var vectors = Enumerable.Range(-boardSize, 2*boardSize)
+                            .Select(n => MultiplyThenAdd(move.Location, n, vector));
+                var span = vectors.Where(i => InBounds(i, boardSize))
+                            .Select(vec => new TicTacToePosition(vec, GetHash(vec)));
+                spanVectorCache[key] = span;
+            }
+
+            return spanVectorCache[key];
+        }
+
         public List<int> MultiplyThenAdd(List<int> array1, int scalar, List<int> array2)
         {
             List<int> result = new(array1.Count);
@@ -99,14 +114,6 @@ namespace NXO.Server.Modules.TicTacToe
                 result.Add(array1[i] + scalar * array2[i]);
             }
             return result;
-        }
-
-        public Array CloneBoard(Array originalBoard)
-        {
-            var output = Array.CreateInstance(typeof(char?),
-                Enumerable.Range(0, originalBoard.Rank).Select(i => originalBoard.GetLength(0)).ToArray());
-            Array.Copy(originalBoard, output, originalBoard.Length);
-            return output;
         }
 
         public Array GetArrayFromBoard(TicTacToeBoard board)
@@ -130,33 +137,35 @@ namespace NXO.Server.Modules.TicTacToe
                 }
             }
         }
-        public IEnumerable<List<int>> GetPositionFromBoardWhere(Array board, Func<int[], Array, bool> selector, int currentDimension, int[] path = null)
+        public HashSet<TicTacToePosition> GetPositionFromBoardWhere(Array board, Func<int[], Array, bool> selector, int dimension)
         {
-            if (path == null)
-                path = new int[board.Rank];
-            if (currentDimension == 1)
+            HashSet<TicTacToePosition> locations = new();
+            Subroutine(dimension, new int[board.Rank]);
+            
+            void Subroutine(int currentDimension, int[] currentPath)
             {
-                for (int i = 0; i < board.GetLength(0); i++)
+                if (currentDimension == 1)
                 {
-                    path[board.Rank - currentDimension] = i;
-                    if (selector(path, board))
+                    for (int i = 0; i < board.GetLength(0); i++)
                     {
-                        var tempPath = new List<int>(path).ToList();
-                        yield return tempPath;
+                        currentPath[board.Rank - currentDimension] = i;
+                        if (selector(currentPath, board))
+                        {
+                            var tempPath = new List<int>(currentPath).ToList();
+                            locations.Add(new(tempPath, GetHash(tempPath)));
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < board.GetLength(0); i++)
+                    {
+                        currentPath[board.Rank - currentDimension] = i;
+                        Subroutine(currentDimension - 1, currentPath);
                     }
                 }
             }
-            else
-            {
-                for (int i = 0; i < board.GetLength(0); i++)
-                {
-                    path[board.Rank - currentDimension] = i;
-                    foreach (var result in GetPositionFromBoardWhere(board, selector, currentDimension - 1, path))
-                    {
-                        yield return result;
-                    }
-                }
-            }
+            return locations;
         }
 
         internal bool IsDraw(TicTacToeBoard board)

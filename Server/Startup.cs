@@ -1,18 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NXO.Server.Dependencies;
-using NXO.Server.Services;
 using NXO.Shared;
-using NXO.Shared.Models;
 using NXO.Shared.Modules;
-using NXO.Shared.Repository;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using System;
 using NXO.Server.Modules.TicTacToe;
 
@@ -50,8 +43,6 @@ namespace NXO.Server
             {
                 module.RegisterServices(services);
             }
-
-            services.AddHostedService<DebugDataService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
